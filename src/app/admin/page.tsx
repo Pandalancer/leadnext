@@ -14,13 +14,14 @@ function AdminPageClient({ user, settings }: AdminPageProps) {
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
     whatsappToken: settings?.whatsappToken || "",
-    whatsappPhoneId: settings?.whatsappPhoneId || "",
+    whatsappPhoneId: settings?.whatsappPhoneNumberId || "",
+    whatsappNumber: settings?.whatsappNumber || "", // Actual phone number like 919876543210
     whatsappWebhookSecret: settings?.whatsappWebhookSecret || "",
     smtpHost: settings?.smtpHost || "",
     smtpPort: settings?.smtpPort || "587",
     smtpUser: settings?.smtpUser || "",
-    smtpPassword: settings?.smtpPassword || "",
-    senderEmail: settings?.senderEmail || "",
+    smtpPassword: settings?.smtpPass || "",
+    senderEmail: settings?.emailFrom || "",
     senderName: settings?.senderName || "",
   });
 

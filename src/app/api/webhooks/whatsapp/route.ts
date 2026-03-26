@@ -81,12 +81,26 @@ export async function POST(req: NextRequest) {
       status = "HOT";
     }
     
-    // Find admin by phone number ID or use default
-    // In production, you'd map the business phone number to an admin
-    const admin = await prisma.user.findFirst({
-      where: { role: "ADMIN" },
-      orderBy: { createdAt: "asc" },
-    });
+    // Get the business phone_number_id from webhook metadata
+    const phoneNumberId = value?.metadata?.phone_number_id;
+    
+    // Find admin by matching whatsappPhoneNumberId
+    let admin = null;
+    if (phoneNumberId) {
+      const adminSettings = await prisma.adminSettings.findFirst({
+        where: { whatsappPhoneNumberId: phoneNumberId },
+        include: { admin: true },
+      });
+      admin = adminSettings?.admin;
+    }
+    
+    // Fallback to first admin if no match
+    if (!admin) {
+      admin = await prisma.user.findFirst({
+        where: { role: "ADMIN" },
+        orderBy: { createdAt: "asc" },
+      });
+    }
     
     if (!admin) {
       return NextResponse.json({ error: "No admin found" }, { status: 500 });
