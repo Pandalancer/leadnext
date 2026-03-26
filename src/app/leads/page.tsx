@@ -208,13 +208,16 @@ function LeadsPageClient({ leads, user }: { leads: Lead[]; user: any }) {
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
                 {filteredLeads.map((lead) => (
-                  <div
+                  <Link
                     key={lead.id}
+                    href={`/leads/${lead.id}`}
                     style={{
                       display: "flex", alignItems: "center", gap: "0.75rem",
                       padding: "1rem",
                       borderRadius: "0.5rem",
                       background: "var(--surface-low)",
+                      textDecoration: "none",
+                      cursor: "pointer",
                     }}
                   >
                     <div style={{
@@ -246,7 +249,7 @@ function LeadsPageClient({ leads, user }: { leads: Lead[]; user: any }) {
                         {lead.source}
                       </div>
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
             )}
