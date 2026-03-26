@@ -1,36 +1,59 @@
-import { auth } from "@/auth";
-import { redirect } from "next/navigation";
+"use client";
+
+import { useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
 import { Sidebar } from "@/components/sidebar";
-import { ArrowLeft, Plus, Filter } from "lucide-react";
+import { ArrowLeft, Plus, Filter, Search, X } from "lucide-react";
 
-export default async function LeadsPage() {
-  const session = await auth();
-  if (!session?.user) redirect("/login");
-  const user = session.user;
+interface Lead {
+  id: string;
+  name: string;
+  phone: string;
+  email: string | null;
+  city: string | null;
+  status: string;
+  source: string;
+  createdAt: Date;
+}
 
-  // Only ADMIN can access their own leads
-  if (user.role !== "ADMIN") {
-    redirect("/dashboard");
-  }
+function LeadsPageClient({ leads, user }: { leads: Lead[]; user: any }) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [showFilters, setShowFilters] = useState(false);
+  
+  const statusFilter = searchParams.get("status") || "";
+  const searchQuery = searchParams.get("q") || "";
 
-  // Fetch leads belonging to this admin
-  const leads = await prisma.lead.findMany({
-    where: { adminId: user.id },
-    select: {
-      id: true,
-      name: true,
-      phone: true,
-      email: true,
-      city: true,
-      status: true,
-      source: true,
-      createdAt: true,
-    },
-    orderBy: { createdAt: "desc" },
-    take: 50
+  const filteredLeads = leads.filter((lead) => {
+    const matchesStatus = !statusFilter || lead.status === statusFilter;
+    const matchesSearch = !searchQuery || 
+      lead.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      lead.phone.includes(searchQuery) ||
+      (lead.email && lead.email.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (lead.city && lead.city.toLowerCase().includes(searchQuery.toLowerCase()));
+    return matchesStatus && matchesSearch;
   });
+
+  const updateFilter = (key: string, value: string) => {
+    const params = new URLSearchParams(searchParams);
+    if (value) {
+      params.set(key, value);
+    } else {
+      params.delete(key);
+    }
+    router.push(`/leads?${params.toString()}`);
+  };
+
+  const statusColors: Record<string, { bg: string; text: string }> = {
+    NEW: { bg: "#dbeafe", text: "#1e40af" },
+    HOT: { bg: "#fee2e2", text: "#991b1b" },
+    INTERESTED: { bg: "#fef9c3", text: "#713f12" },
+    NOT_INTERESTED: { bg: "#fecaca", text: "#7f1d1d" },
+    NOT_PICKED: { bg: "#fef3c7", text: "#92400e" },
+    CONVERTED: { bg: "#d1fae5", text: "#065f46" },
+    FOLLOW_UP: { bg: "#ede9fe", text: "#5b21b6" },
+  };
 
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: "var(--surface)" }}>
@@ -57,21 +80,24 @@ export default async function LeadsPage() {
               <ArrowLeft size={18} />
             </Link>
             <h1 style={{ fontSize: "0.9375rem", fontWeight: "700", color: "var(--text-primary)", margin: 0 }}>
-              My Leads ({leads.length})
+              My Leads ({filteredLeads.length})
             </h1>
           </div>
           <div style={{ display: "flex", gap: "0.5rem" }}>
-            <button style={{
-              display: "flex", alignItems: "center", gap: "0.5rem",
-              padding: "0.5rem 1rem",
-              background: "transparent",
-              color: "var(--text-secondary)",
-              border: "1px solid var(--outline-ghost)",
-              borderRadius: "0.375rem",
-              fontSize: "0.8125rem",
-              fontWeight: "600",
-              cursor: "pointer",
-            }}>
+            <button 
+              onClick={() => setShowFilters(!showFilters)}
+              style={{
+                display: "flex", alignItems: "center", gap: "0.5rem",
+                padding: "0.5rem 1rem",
+                background: showFilters ? "var(--emerald)" : "transparent",
+                color: showFilters ? "white" : "var(--text-secondary)",
+                border: "1px solid var(--outline-ghost)",
+                borderRadius: "0.375rem",
+                fontSize: "0.8125rem",
+                fontWeight: "600",
+                cursor: "pointer",
+              }}
+            >
               <Filter size={16} />
               Filter
             </button>
@@ -94,19 +120,94 @@ export default async function LeadsPage() {
           </div>
         </header>
 
+        {/* Filters */}
+        {showFilters && (
+          <div style={{
+            background: "var(--surface-card)",
+            borderBottom: "1px solid var(--outline-ghost)",
+            padding: "1rem 1.5rem",
+            display: "flex",
+            gap: "1rem",
+            flexWrap: "wrap",
+            alignItems: "center",
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flex: 1, minWidth: "200px" }}>
+              <Search size={16} style={{ color: "var(--text-muted)" }} />
+              <input
+                type="text"
+                placeholder="Search leads..."
+                value={searchQuery}
+                onChange={(e) => updateFilter("q", e.target.value)}
+                style={{
+                  flex: 1,
+                  padding: "0.5rem",
+                  background: "var(--surface-low)",
+                  border: "1px solid var(--outline-ghost)",
+                  borderRadius: "0.375rem",
+                  fontSize: "0.875rem",
+                  color: "var(--text-primary)",
+                }}
+              />
+              {searchQuery && (
+                <button onClick={() => updateFilter("q", "")} style={{ background: "none", border: "none", cursor: "pointer" }}>
+                  <X size={16} style={{ color: "var(--text-muted)" }} />
+                </button>
+              )}
+            </div>
+            <select
+              value={statusFilter}
+              onChange={(e) => updateFilter("status", e.target.value)}
+              style={{
+                padding: "0.5rem 1rem",
+                background: "var(--surface-low)",
+                border: "1px solid var(--outline-ghost)",
+                borderRadius: "0.375rem",
+                fontSize: "0.875rem",
+                color: "var(--text-primary)",
+                cursor: "pointer",
+              }}
+            >
+              <option value="">All Status</option>
+              <option value="NEW">New</option>
+              <option value="HOT">Hot</option>
+              <option value="INTERESTED">Interested</option>
+              <option value="NOT_INTERESTED">Not Interested</option>
+              <option value="NOT_PICKED">Not Picked</option>
+              <option value="CONVERTED">Converted</option>
+              <option value="FOLLOW_UP">Follow Up</option>
+            </select>
+            {(statusFilter || searchQuery) && (
+              <button
+                onClick={() => router.push("/leads")}
+                style={{
+                  padding: "0.5rem 1rem",
+                  background: "transparent",
+                  border: "1px solid var(--outline-ghost)",
+                  borderRadius: "0.375rem",
+                  fontSize: "0.8125rem",
+                  color: "var(--text-muted)",
+                  cursor: "pointer",
+                }}
+              >
+                Clear All
+              </button>
+            )}
+          </div>
+        )}
+
         {/* Content */}
         <main style={{ flex: 1, padding: "1.5rem" }}>
           <div className="card" style={{ padding: "1.5rem" }}>
-            {leads.length === 0 ? (
+            {filteredLeads.length === 0 ? (
               <div style={{ textAlign: "center", padding: "3rem", color: "var(--text-muted)" }}>
-                <p>No leads yet.</p>
+                <p>{leads.length === 0 ? "No leads yet." : "No leads match your filters."}</p>
                 <p style={{ fontSize: "0.875rem", marginTop: "0.5rem" }}>
-                  Click "Add Lead" to create your first lead.
+                  {leads.length === 0 ? 'Click "Add Lead" to create your first lead.' : "Try adjusting your search or filters."}
                 </p>
               </div>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-                {leads.map((lead: any) => (
+                {filteredLeads.map((lead) => (
                   <div
                     key={lead.id}
                     style={{
@@ -135,8 +236,8 @@ export default async function LeadsPage() {
                     <div style={{ textAlign: "right" }}>
                       <div style={{
                         fontSize: "0.75rem", fontWeight: "600",
-                        background: lead.status === "HOT" ? "#fee2e2" : lead.status === "NEW" ? "#dbeafe" : lead.status === "CONVERTED" ? "#d1fae5" : "#fef9c3",
-                        color: lead.status === "HOT" ? "#991b1b" : lead.status === "NEW" ? "#1e40af" : lead.status === "CONVERTED" ? "#065f46" : "#713f12",
+                        background: statusColors[lead.status]?.bg || "#e2e8f0",
+                        color: statusColors[lead.status]?.text || "#475569",
                         padding: "0.25rem 0.75rem", borderRadius: "9999px", display: "inline-block", marginBottom: "0.25rem",
                       }}>
                         {lead.status.replace("_", " ")}
@@ -155,3 +256,38 @@ export default async function LeadsPage() {
     </div>
   );
 }
+
+// Server component wrapper
+import { auth } from "@/auth";
+import { redirect } from "next/navigation";
+import { prisma } from "@/lib/prisma";
+
+async function LeadsPageServer({ searchParams }: { searchParams: { [key: string]: string | undefined } }) {
+  const session = await auth();
+  if (!session?.user) redirect("/login");
+  const user = session.user;
+
+  if (user.role !== "ADMIN") {
+    redirect("/dashboard");
+  }
+
+  const leads = await prisma.lead.findMany({
+    where: { adminId: user.id },
+    select: {
+      id: true,
+      name: true,
+      phone: true,
+      email: true,
+      city: true,
+      status: true,
+      source: true,
+      createdAt: true,
+    },
+    orderBy: { createdAt: "desc" },
+    take: 50,
+  });
+
+  return <LeadsPageClient leads={leads} user={user} />;
+}
+
+export { LeadsPageServer as default };
