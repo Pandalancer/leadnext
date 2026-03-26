@@ -375,7 +375,7 @@ function AdminDashboard({ user, totalLeads }: { user: any, totalLeads: number })
                         fontSize: "0.625rem", fontWeight: "700", color: "#10b981",
                         flexShrink: 0,
                       }}>
-                        {f.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
+                        {f.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: "0.8125rem", fontWeight: "600", color: "var(--text-primary)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
