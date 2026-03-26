@@ -1,0 +1,309 @@
+# LeadCRM Database Schema & Role-Based Access
+
+> **IMPORTANT FOR AI ASSISTANTS**: This document is derived from `LeadCRM-Final-PRD.md`.
+> Do not merge, reconcile, or cross-reference with any earlier schema docs.
+> This is the only source of truth for the database design.
+
+---
+
+## Role Structure (V1 — 2 Tiers Only)
+
+```
+SUPER_ADMIN (platform owner)
+      │
+      ▼
+ADMIN (business clients — each manages their own leads)
+```
+
+- `CLIENT` exists as an enum value only — reserved for V2. No tables, routes, or UI reference it in V1.
+- Leads belong directly to an **ADMIN**, not to a CLIENT under an ADMIN.
+- Each ADMIN has their own WhatsApp Business number and credentials stored in `AdminSettings`.
+
+---
+
+## Tables
+
+### 1. User
+
+All platform users. In V1 only SUPER_ADMIN and ADMIN are active roles.
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `id` | String (UUID) | PK |
+| `email` | String | Unique |
+| `password` | String | bcrypt hashed, cost ≥ 12. Never plaintext. |
+| `name` | String | Display name |
+| `role` | Enum (UserRole) | SUPER_ADMIN or ADMIN in V1 |
+| `status` | Enum (UserStatus) | ACTIVE / SUSPENDED / DELETED |
+| `createdAt` | DateTime | Auto |
+| `updatedAt` | DateTime | Auto |
+| `lastLoginAt` | DateTime? | Updated on successful login |
+
+**Indexes**: `role`, `status`
+
+**Relations**: `leads`, `activities`, `followUps`, `settings` (→ AdminSettings)
+
+**No `adminId` field** — there is no parent-child User relationship in V1. ADMIN accounts are created directly by SUPER_ADMIN.
+
+#### Access by Role
+
+| Operation | SUPER_ADMIN | ADMIN |
+|-----------|:-----------:|:-----:|
+| Read all users | ✅ | ❌ |
+| Read own profile | ✅ | ✅ |
+| Create ADMIN accounts | ✅ | ❌ |
+| Edit any user | ✅ | ❌ |
+| Edit own profile | ✅ | ✅ |
+| Suspend/delete any user | ✅ | ❌ |
+| See `password` field | ❌ | ❌ |
+
+---
+
+### 2. AdminSettings
+
+Per-admin configuration. **Each ADMIN has exactly one row.**
+WhatsApp and email credentials are stored here, not in SystemSettings.
+`whatsappToken`, `whatsappWebhookSecret`, and `smtpPass` are **AES-256 encrypted** before storage.
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `id` | String (UUID) | PK |
+| `adminId` | String (FK → User.id) | Unique — one settings row per admin |
+| `whatsappToken` | String? | AES-256 encrypted |
+| `whatsappPhoneNumberId` | String? | Meta Business phone number ID |
+| `whatsappWebhookSecret` | String? | AES-256 encrypted |
+| `smtpHost` | String? | Email server |
+| `smtpPort` | Int? | Email port |
+| `smtpUser` | String? | Email username |
+| `smtpPass` | String? | AES-256 encrypted |
+| `emailFrom` | String? | Sender address |
+| `timezone` | String | Default: "Asia/Kolkata" |
+| `reminderLeadTime` | Int | Minutes before follow-up to fire reminder. Default: 30 |
+| `updatedAt` | DateTime | Auto |
+
+**Cascade**: deleted when parent User is deleted.
+
+#### Access by Role
+
+| Operation | SUPER_ADMIN | ADMIN |
+|-----------|:-----------:|:-----:|
+| Read any admin's settings | ✅ | ❌ |
+| Read own settings | ✅ | ✅ |
+| Write any admin's settings | ✅ | ❌ |
+| Write own settings | ❌ | ✅ |
+
+> SUPER_ADMIN can read all settings (for support/debugging) but writing is the ADMIN's responsibility. SUPER_ADMIN can override in exceptional cases.
+
+---
+
+### 3. SystemSettings
+
+Global platform config. Single row. **Does not contain WhatsApp or email credentials** — those live in AdminSettings.
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `id` | String (cuid) | PK |
+| `settings` | JSON? | Platform-level flags and config |
+| `updatedAt` | DateTime | Auto |
+| `updatedBy` | String? | User ID of last updater |
+
+#### Access by Role
+
+| Operation | SUPER_ADMIN | ADMIN |
+|-----------|:-----------:|:-----:|
+| Read | ✅ | ❌ |
+| Write | ✅ | ❌ |
+
+---
+
+### 4. Lead
+
+Each lead belongs to one **ADMIN** directly (via `adminId`).
+There is no intermediate CLIENT owner.
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `id` | String (UUID) | PK |
+| `adminId` | String (FK → User.id) | Owner — the ADMIN this lead belongs to |
+| `name` | String | Lead full name |
+| `phone` | String | Validated: 10–15 digits |
+| `email` | String? | Optional |
+| `city` | String? | Optional |
+| `source` | Enum (LeadSource) | See enums below |
+| `status` | Enum (LeadStatus) | See enums below |
+| `remarks` | String? | Internal notes |
+| `whatsappOptIn` | Boolean | Default: false |
+| `createdAt` | DateTime | Auto |
+| `updatedAt` | DateTime | Auto |
+
+**No `followUpDate` or `reminderSent` fields** — follow-up scheduling is handled by the FollowUp table.
+
+**Unique constraint**: `(adminId, phone)` — same phone can exist across different admins, not within the same admin.
+
+**Indexes**: `adminId`, `status`, `phone`, `createdAt`
+
+**Cascade**: deleted when parent User (ADMIN) is deleted.
+
+#### Access by Role
+
+| Operation | SUPER_ADMIN | ADMIN |
+|-----------|:-----------:|:-----:|
+| Read all leads system-wide | ✅ | ❌ |
+| Read own leads (`adminId` = self) | ✅ | ✅ |
+| Create leads | ✅ | ✅ |
+| Edit leads | ✅ | ✅ (own only) |
+| Delete leads | ✅ | ✅ (own only) |
+| Export leads | ✅ | ✅ (own only) |
+
+---
+
+### 5. FollowUp
+
+Replaces the old `follow_up_date + reminderSent BOOLEAN` pattern from the PHP app.
+A lead can have **multiple follow-ups** over its lifecycle.
+Each follow-up tracks its own scheduled time, reminder state, and outcome independently.
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `id` | String (UUID) | PK |
+| `leadId` | String (FK → Lead.id) | The lead this follow-up is for |
+| `adminId` | String (FK → User.id) | **Denormalized from Lead** — kept for efficient dashboard queries without JOIN |
+| `scheduledAt` | DateTime | When the follow-up is due |
+| `status` | Enum (FollowUpStatus) | See enums below |
+| `reminderSentAt` | DateTime? | Null = reminder not yet fired |
+| `reminderChannel` | String? | "whatsapp" / "email" / "both" |
+| `completedAt` | DateTime? | Set when status → COMPLETED |
+| `snoozedUntil` | DateTime? | New target datetime if snoozed |
+| `notes` | String? | What happened in this follow-up |
+| `createdAt` | DateTime | Auto |
+| `updatedAt` | DateTime | Auto |
+
+**Why `adminId` is not redundant**: Dashboard query "show today's follow-ups for admin X" runs against FollowUp directly. Without `adminId` on FollowUp, every such query requires a JOIN through Lead. At scale this matters.
+
+**Indexes**: `leadId`, `adminId`, `scheduledAt`, `status`
+
+**Cascade**: deleted when parent Lead is deleted.
+
+#### Access by Role
+
+| Operation | SUPER_ADMIN | ADMIN |
+|-----------|:-----------:|:-----:|
+| Read all follow-ups | ✅ | ❌ |
+| Read own follow-ups (`adminId` = self) | ✅ | ✅ |
+| Create follow-up | ✅ | ✅ (own leads only) |
+| Complete / Snooze / Cancel | ✅ | ✅ (own only) |
+
+---
+
+### 6. ActivityLog
+
+Audit trail. Written on every meaningful state change — never written by keep-alive cron or system health checks.
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `id` | String (UUID) | PK |
+| `userId` | String? (FK → User.id) | Who triggered the action (null for webhook/system) |
+| `leadId` | String? (FK → Lead.id) | Affected lead (null for non-lead actions) |
+| `action` | String | See action strings below |
+| `details` | JSON? | `{ oldValue, newValue, metadata }` |
+| `createdAt` | DateTime | Auto |
+
+**Standard action strings:**
+`CREATE_LEAD`, `UPDATE_LEAD`, `DELETE_LEAD`, `UPDATE_STATUS`,
+`FOLLOW_UP_CREATED`, `FOLLOW_UP_COMPLETED`, `FOLLOW_UP_SNOOZED`, `FOLLOW_UP_CANCELLED`,
+`SEND_WHATSAPP_REMINDER`, `SEND_EMAIL_REMINDER`,
+`WHATSAPP_LEAD_CAPTURED`, `ADMIN_CREATED`, `ADMIN_SUSPENDED`
+
+**Indexes**: `userId`, `leadId`, `createdAt`
+
+#### Access by Role
+
+| Operation | SUPER_ADMIN | ADMIN |
+|-----------|:-----------:|:-----:|
+| Read all logs | ✅ | ❌ |
+| Read own logs (`userId` = self, or leads where `adminId` = self) | ✅ | ✅ |
+
+---
+
+## Enums
+
+### UserRole
+| Value | V1 Status | Notes |
+|-------|-----------|-------|
+| `SUPER_ADMIN` | ✅ Active | Platform owner |
+| `ADMIN` | ✅ Active | Business client |
+| `CLIENT` | 🔒 Reserved | V2 only — team members under ADMIN |
+
+### UserStatus
+| Value | Description |
+|-------|-------------|
+| `ACTIVE` | Normal access |
+| `SUSPENDED` | Login blocked, data preserved |
+| `DELETED` | Soft delete — cascade handled by app logic |
+
+### LeadSource
+`MANUAL` / `FACEBOOK` / `WHATSAPP` / `WEBSITE` / `REFERRAL` / `OTHER`
+
+### LeadStatus
+| Value | Badge Color |
+|-------|-------------|
+| `NEW` | Slate |
+| `INTERESTED` | Blue |
+| `NOT_INTERESTED` | Red |
+| `NOT_PICKED` | Yellow |
+| `HOT` | Orange |
+| `CONVERTED` | Emerald |
+| `FOLLOW_UP` | Purple |
+
+### FollowUpStatus
+| Value | Meaning |
+|-------|---------|
+| `PENDING` | Scheduled, reminder not yet sent |
+| `REMINDED` | Reminder sent, awaiting admin action |
+| `COMPLETED` | Follow-up done |
+| `SNOOZED` | Pushed to `snoozedUntil` |
+| `CANCELLED` | No longer relevant |
+
+---
+
+## WhatsApp Webhook Routing
+
+Each ADMIN gets their own webhook URL:
+```
+POST /api/webhooks/whatsapp/[adminId]
+```
+
+The webhook handler:
+1. Looks up `AdminSettings` by `adminId`
+2. Validates request signature against `whatsappWebhookSecret` (decrypted)
+3. Parses message → extracts phone + intent
+4. Upserts lead with `@@unique([adminId, phone])`
+5. Writes `ActivityLog` entry with action `WHATSAPP_LEAD_CAPTURED`
+
+No shared webhook endpoint exists. There is no global WhatsApp config.
+
+---
+
+## Encryption
+
+Fields encrypted with AES-256-GCM before DB storage:
+- `AdminSettings.whatsappToken`
+- `AdminSettings.whatsappWebhookSecret`
+- `AdminSettings.smtpPass`
+
+Encryption key stored in `ENCRYPTION_KEY` env var (32-byte hex).
+See `src/lib/crypto.ts` for encrypt/decrypt utility.
+
+---
+
+## What This Schema Does NOT Have (intentional)
+
+| Missing Field | Reason |
+|---------------|--------|
+| `Lead.followUpDate` | Replaced by FollowUp table |
+| `Lead.reminderSent` | Replaced by `FollowUp.reminderSentAt` |
+| `Lead.clientId` | Leads belong to ADMIN directly, field is `adminId` |
+| `User.adminId` | No parent-child User hierarchy in V1 |
+| `SystemSettings.whatsappToken` | Per-admin config lives in AdminSettings |
+| `WhatsAppChannel` model | V2 multi-channel feature — not in V1 |
+| `channelId` on Lead | V2 only |

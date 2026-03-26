@@ -8,10 +8,10 @@ const prisma = new PrismaClient({})
 
 async function main() {
   // Create Super Admin
-  const superAdminPassword = await bcrypt.hash('superadmin123', 12)
+  const superAdminPassword = await bcrypt.hash('SuperAdmin123!', 12)
   const superAdmin = await prisma.user.upsert({
     where: { email: 'superadmin@leadcrm.com' },
-    update: {},
+    update: { password: superAdminPassword },
     create: {
       email: 'superadmin@leadcrm.com',
       name: 'Super Admin',
@@ -23,10 +23,10 @@ async function main() {
   console.log('Super Admin created:', superAdmin.email)
 
   // Create Admin
-  const adminPassword = await bcrypt.hash('admin123', 12)
+  const adminPassword = await bcrypt.hash('Admin123!', 12)
   const admin = await prisma.user.upsert({
     where: { email: 'admin@leadcrm.com' },
-    update: {},
+    update: { password: adminPassword },
     create: {
       email: 'admin@leadcrm.com',
       name: 'Admin User',

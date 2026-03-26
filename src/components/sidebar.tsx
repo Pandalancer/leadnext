@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
+import { useState } from "react";
 import {
   LayoutDashboard,
   Users,
@@ -9,6 +11,8 @@ import {
   Settings,
   Shield,
   ChevronRight,
+  LogOut,
+  ChevronUp,
 } from "lucide-react";
 
 interface NavItem {
@@ -41,6 +45,7 @@ interface SidebarProps {
 
 export function Sidebar({ userRole, userName, userEmail }: SidebarProps) {
   const pathname = usePathname();
+  const [showMenu, setShowMenu] = useState(false);
 
   // Different navigation for Super Admin vs Admin/Client
   const navItems = userRole === "SUPER_ADMIN" ? superAdminNavItems : adminNavItems;
@@ -126,35 +131,90 @@ export function Sidebar({ userRole, userName, userEmail }: SidebarProps) {
         })}
       </nav>
 
-      {/* User footer */}
-      <div style={{
-        padding: "1rem 1.25rem",
-        borderTop: "1px solid rgba(255,255,255,0.06)",
-        display: "flex",
-        alignItems: "center",
-        gap: "0.75rem",
-      }}>
-        <div style={{
-          width: "32px", height: "32px",
-          borderRadius: "50%",
-          background: "linear-gradient(135deg, #1e293b, #334155)",
-          border: "2px solid rgba(16,185,129,0.4)",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: "0.6875rem",
-          fontWeight: "700",
-          color: "#10b981",
-          flexShrink: 0,
-        }}>
-          {initials}
-        </div>
-        <div style={{ overflow: "hidden", flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: "0.8125rem", fontWeight: "600", color: "#f8fafc", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-            {userName || "User"}
+      {/* User footer - clickable dropdown */}
+      <div style={{ position: "relative" }}>
+        <button
+          onClick={() => setShowMenu(!showMenu)}
+          style={{
+            width: "100%",
+            padding: "1rem 1.25rem",
+            borderTop: "1px solid rgba(255,255,255,0.06)",
+            display: "flex",
+            alignItems: "center",
+            gap: "0.75rem",
+            background: "transparent",
+            border: "none",
+            borderBottom: "none",
+            borderLeft: "none",
+            borderRight: "none",
+            cursor: "pointer",
+            color: "inherit",
+          }}
+        >
+          <div style={{
+            width: "32px", height: "32px",
+            borderRadius: "50%",
+            background: "linear-gradient(135deg, #1e293b, #334155)",
+            border: "2px solid rgba(16,185,129,0.4)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: "0.6875rem",
+            fontWeight: "700",
+            color: "#10b981",
+            flexShrink: 0,
+          }}>
+            {initials}
           </div>
-          <div style={{ fontSize: "0.6875rem", color: "#64748b", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-            {userRole ? userRole.toLowerCase().replace("_", " ") : "user"}
+          <div style={{ overflow: "hidden", flex: 1, minWidth: 0, textAlign: "left" }}>
+            <div style={{ fontSize: "0.8125rem", fontWeight: "600", color: "#f8fafc", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+              {userName || "User"}
+            </div>
+            <div style={{ fontSize: "0.6875rem", color: "#64748b", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+              {userRole ? userRole.toLowerCase().replace("_", " ") : "user"}
+            </div>
           </div>
-        </div>
+          <ChevronUp size={16} style={{ color: "#64748b", transform: showMenu ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }} />
+        </button>
+
+        {/* Dropdown menu */}
+        {showMenu && (
+          <div style={{
+            position: "absolute",
+            bottom: "100%",
+            left: "1rem",
+            right: "1rem",
+            marginBottom: "0.5rem",
+            background: "var(--surface-card)",
+            border: "1px solid var(--outline-ghost)",
+            borderRadius: "0.5rem",
+            padding: "0.5rem",
+            boxShadow: "0 10px 15px -3px rgba(0,0,0,0.3)",
+            zIndex: 50,
+          }}>
+            <button
+              onClick={() => signOut({ callbackUrl: "/login" })}
+              style={{
+                width: "100%",
+                display: "flex",
+                alignItems: "center",
+                gap: "0.75rem",
+                padding: "0.625rem 0.75rem",
+                borderRadius: "0.375rem",
+                background: "transparent",
+                border: "none",
+                color: "#ef4444",
+                fontSize: "0.8125rem",
+                fontWeight: "500",
+                cursor: "pointer",
+                transition: "background 0.15s",
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.background = "rgba(239,68,68,0.1)"}
+              onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+            >
+              <LogOut size={16} />
+              Sign out
+            </button>
+          </div>
+        )}
       </div>
     </aside>
   );

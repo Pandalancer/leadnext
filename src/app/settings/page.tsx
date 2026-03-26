@@ -16,6 +16,11 @@ export default async function SettingsPage() {
     select: { id: true, name: true, email: true, role: true, status: true, createdAt: true }
   });
 
+  // If user not found in DB (stale session after reset), redirect to login
+  if (!userDetails) {
+    redirect("/login");
+  }
+
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: "var(--surface)" }}>
       <Sidebar
