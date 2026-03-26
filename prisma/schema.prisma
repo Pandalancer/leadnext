@@ -1,0 +1,159 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─── USER MANAGEMENT ─────────────────────────
+
+model User {
+  id            String     @id @default(uuid())
+  email         String     @unique
+  password      String     // hashed with bcrypt
+  name          String
+  role          UserRole   @default(CLIENT)
+  status        UserStatus @default(ACTIVE)
+  
+  // For CLIENT role: reference to the admin who created them
+  adminId       String?
+  admin         User?      @relation("AdminClients", fields: [adminId], references: [id])
+  clients       User[]     @relation("AdminClients")
+  
+  // Client-specific settings
+  settings      Json?      // { timezone, notificationPreferences, etc. }
+  
+  // Timestamps
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  lastLoginAt   DateTime?
+
+  // Relations
+  leads         Lead[]
+  activities    ActivityLog[]
+  
+  @@index([adminId])
+  @@index([role])
+  @@index([status])
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  CLIENT
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  DELETED
+}
+
+// ─── LEADS ───────────────────────────────────
+
+model Lead {
+  id              String     @id @default(uuid())
+  
+  // Multi-tenancy: each lead belongs to a client
+  clientId        String
+  client          User       @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  
+  // Core lead data
+  name            String
+  phone           String
+  email           String?
+  city            String?
+  source          LeadSource @default(MANUAL)
+  
+  // Status workflow
+  status          LeadStatus @default(NEW)
+  
+  // Follow-up system
+  remarks         String?
+  followUpDate    DateTime?
+  reminderSent    Boolean    @default(false)
+  
+  // WhatsApp integration
+  whatsappOptIn   Boolean    @default(false)
+  
+  // Timestamps
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  
+  // Relations
+  activities      ActivityLog[]
+  
+  @@index([clientId])
+  @@index([status])
+  @@index([followUpDate])
+  @@index([phone])
+  @@unique([clientId, phone]) // Phone must be unique per client
+}
+
+enum LeadSource {
+  MANUAL
+  FACEBOOK
+  WHATSAPP
+  WEBSITE
+  REFERRAL
+  OTHER
+}
+
+enum LeadStatus {
+  NEW
+  INTERESTED
+  NOT_INTERESTED
+  NOT_PICKED
+  HOT
+  CONVERTED
+  FOLLOW_UP
+}
+
+// ─── ACTIVITY LOG ─────────────────────────────
+
+model ActivityLog {
+  id          String   @id @default(uuid())
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+  
+  leadId      String?
+  lead        Lead?    @relation(fields: [leadId], references: [id])
+  
+  action      String   // "CREATE_LEAD", "UPDATE_STATUS", "SEND_WHATSAPP", etc.
+  details     Json?    // { oldValue, newValue, metadata }
+  
+  createdAt   DateTime @default(now())
+  
+  @@index([userId])
+  @@index([leadId])
+  @@index([createdAt])
+}
+
+// ─── SYSTEM SETTINGS ─────────────────────────
+
+model SystemSettings {
+  id                    String   @id @default(cuid())
+  
+  // WhatsApp API Configuration
+  whatsappToken         String?  // Encrypted
+  whatsappPhoneNumberId String?
+  whatsappWebhookSecret String?
+  
+  // Email Configuration
+  smtpHost              String?
+  smtpPort              Int?
+  smtpUser              String?
+  smtpPass              String?  // Encrypted
+  
+  // Global settings
+  settings              Json?
+  
+  updatedAt             DateTime @updatedAt
+  updatedBy             String?
+}

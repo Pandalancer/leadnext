@@ -1,26 +1,174 @@
 @import "tailwindcss";
 
+/* ─── Iron Emerald Design System ───────────────────────────── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Surfaces */
+  --surface:              #f8fafc;   /* slate-50 */
+  --surface-low:          #f1f5f9;   /* slate-100 */
+  --surface-card:         #ffffff;
+  --surface-container:    #e2e8f0;   /* slate-200 */
+
+  /* Sidebar / Primary */
+  --sidebar-bg:           #0f172a;   /* slate-900 */
+  --sidebar-hover:        #1e293b;   /* slate-800 */
+  --sidebar-active-bg:    #1e293b;
+
+  /* Accent — Emerald */
+  --emerald:              #10b981;   /* emerald-500 */
+  --emerald-dark:         #059669;   /* emerald-600 */
+  --emerald-dim:          #064e3b;   /* emerald-900 */
+
+  /* Text */
+  --text-primary:         #0f172a;   /* slate-900 */
+  --text-secondary:       #475569;   /* slate-600 */
+  --text-muted:           #94a3b8;   /* slate-400 */
+  --text-on-dark:         #f8fafc;
+  --text-on-sidebar:      #cbd5e1;   /* slate-300 */
+
+  /* Borders / Outlines */
+  --outline:              #94a3b8;   /* slate-400 */
+  --outline-ghost:        rgba(15, 23, 42, 0.12);
+
+  /* Shadows */
+  --shadow-card:          0 1px 3px rgba(15,23,42,0.06), 0 1px 2px rgba(15,23,42,0.04);
+  --shadow-float:         0 16px 32px rgba(15,23,42,0.10), 0 4px 8px rgba(15,23,42,0.06);
+
+  /* Status badges */
+  --badge-new:            #dbeafe;
+  --badge-new-text:       #1e40af;
+  --badge-hot:            #fee2e2;
+  --badge-hot-text:       #991b1b;
+  --badge-converted:      #d1fae5;
+  --badge-converted-text: #065f46;
+  --badge-interested:     #fef9c3;
+  --badge-interested-text:#713f12;
+  --badge-followup:       #ede9fe;
+  --badge-followup-text:  #5b21b6;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --color-background: var(--surface);
+  --color-foreground: var(--text-primary);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+}
+
+html {
+  height: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--surface);
+  color: var(--text-primary);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-optical-sizing: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100%;
+}
+
+/* ─── Scrollbar ─────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--surface-low); }
+::-webkit-scrollbar-thumb { background: var(--outline); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
+
+/* ─── Iron Emerald Utility Classes ─────────────────────────── */
+.btn-emerald {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #ffffff;
+  background: linear-gradient(145deg, #10b981, #059669);
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+  letter-spacing: 0.01em;
+}
+.btn-emerald:hover { opacity: 0.92; transform: translateY(-1px); }
+.btn-emerald:active { opacity: 1; transform: translateY(0); }
+.btn-emerald:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  background: transparent;
+  border: 1.5px solid var(--outline-ghost);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.btn-outline:hover {
+  border-color: var(--emerald);
+  color: var(--emerald);
+  background: rgba(16,185,129,0.04);
+}
+
+.card {
+  background: var(--surface-card);
+  border-radius: 0.5rem;
+  box-shadow: var(--shadow-card);
+}
+
+.stat-card {
+  background: var(--surface-card);
+  border-radius: 0.5rem;
+  padding: 1.25rem 1.5rem;
+  box-shadow: var(--shadow-card);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.badge-new        { background: var(--badge-new);        color: var(--badge-new-text); }
+.badge-hot        { background: var(--badge-hot);        color: var(--badge-hot-text); }
+.badge-converted  { background: var(--badge-converted);  color: var(--badge-converted-text); }
+.badge-interested { background: var(--badge-interested); color: var(--badge-interested-text); }
+.badge-followup   { background: var(--badge-followup);   color: var(--badge-followup-text); }
+
+/* ─── Input / Field ─────────────────────────────────────────── */
+.field-input {
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  border-radius: 0.375rem;
+  border: 1.5px solid var(--outline-ghost);
+  background: var(--surface-card);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  font-family: inherit;
+  transition: border-color 0.15s;
+  outline: none;
+}
+.field-input::placeholder { color: var(--text-muted); }
+.field-input:focus { border-color: var(--emerald); }
+.field-input:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.field-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 0.375rem;
+  letter-spacing: 0.02em;
 }

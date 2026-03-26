@@ -38,4 +38,22 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
-next-env.d.ts
+# next-env.d.ts should NOT be ignored - required for Next.js types
+
+/src/generated/prisma
+PRD.md
+PRD-v2-response.md
+PRD-v2.md
+LeadCRM-Final-PRD.md
+CLAUDE.md
+AGENTS.md
+STATUS.md
+screens-ui.md
+crmuser.txt
+
+# supabase
+supabase/.temp/
+supabase/config.toml
+
+# design files
+design.pen
