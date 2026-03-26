@@ -1,6 +1,7 @@
 import { auth, signOut } from "@/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { prisma } from "@/lib/prisma";
 import { Sidebar } from "@/components/sidebar";
 import {
   TrendingUp,
@@ -16,22 +17,6 @@ import {
   CheckCircle2,
 } from "lucide-react";
 
-/* ─── Mock data (will be replaced by real DB queries) ───────── */
-const stats = [
-  { label: "Total Leads",       value: "1,247",  icon: <TrendingUp size={20} />,  delta: "+12% vs last month", color: "#3b82f6" },
-  { label: "Converted",         value: "89",     icon: <UserCheck size={20} />,   delta: "7.1% conversion rate", color: "#10b981" },
-  { label: "Today's Leads",     value: "23",     icon: <UserPlus size={20} />,    delta: "+5 from yesterday",    color: "#f59e0b" },
-  { label: "Pending Follow-ups",value: "34",     icon: <Bell size={20} />,        delta: "8 due in 1 hr",       color: "#ef4444" },
-];
-
-const followUps = [
-  { name: "Priya Sharma",  phone: "+91 98765 43210", time: "10:30 AM", tag: "HOT" },
-  { name: "Amit Verma",    phone: "+91 87654 32109", time: "11:00 AM", tag: "INTERESTED" },
-  { name: "Sunita Patel",  phone: "+91 76543 21098", time: "12:15 PM", tag: "FOLLOW_UP" },
-  { name: "Rohit Gupta",   phone: "+91 65432 10987", time: "2:00 PM",  tag: "NEW" },
-  { name: "Kavita Singh",  phone: "+91 54321 09876", time: "4:30 PM",  tag: "INTERESTED" },
-];
-
 const tagColors: Record<string, { bg: string; text: string }> = {
   NEW:          { bg: "#dbeafe", text: "#1e40af" },
   HOT:          { bg: "#fee2e2", text: "#991b1b" },
@@ -40,18 +25,6 @@ const tagColors: Record<string, { bg: string; text: string }> = {
   CONVERTED:    { bg: "#d1fae5", text: "#065f46" },
 };
 
-/* ─── Bar chart data ─────────────────────────────────────────── */
-const chartData = [
-  { day: "Mon", value: 18 },
-  { day: "Tue", value: 27 },
-  { day: "Wed", value: 14 },
-  { day: "Thu", value: 31 },
-  { day: "Fri", value: 22 },
-  { day: "Sat", value: 9 },
-  { day: "Sun", value: 16 },
-];
-const maxVal = Math.max(...chartData.map((d) => d.value));
-
 export default async function DashboardPage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
@@ -59,14 +32,41 @@ export default async function DashboardPage() {
 
   // Super Admin sees tenant management, not lead data
   if (user.role === "SUPER_ADMIN") {
-    return <SuperAdminDashboard user={user} />;
+    // Fetch real counts from database
+    const [adminCount, clientCount, leadCount] = await Promise.all([
+      prisma.user.count({ where: { role: "ADMIN" } }),
+      prisma.user.count({ where: { role: "CLIENT" } }),
+      prisma.lead.count(),
+    ]);
+
+    return <SuperAdminDashboard user={user} adminCount={adminCount} clientCount={clientCount} leadCount={leadCount} />;
   }
 
-  return <AdminDashboard user={user} />;
+  // For Admin/Client - fetch their leads
+  // Leads belong to clients, so for ADMIN we need to find leads of their clients
+  let totalLeads = 0;
+  if (user.role === "ADMIN") {
+    // Get all client IDs belonging to this admin
+    const clients = await prisma.user.findMany({
+      where: { adminId: user.id, role: "CLIENT" },
+      select: { id: true }
+    });
+    const clientIds = clients.map(c => c.id);
+    totalLeads = await prisma.lead.count({
+      where: { clientId: { in: clientIds } }
+    });
+  } else {
+    // For CLIENT role
+    totalLeads = await prisma.lead.count({
+      where: { clientId: user.id }
+    });
+  }
+
+  return <AdminDashboard user={user} totalLeads={totalLeads} />;
 }
 
 // Super Admin: Tenant Management View
-function SuperAdminDashboard({ user }: { user: any }) {
+function SuperAdminDashboard({ user, adminCount, clientCount, leadCount }: { user: any, adminCount: number, clientCount: number, leadCount: number }) {
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: "var(--surface)" }}>
       <Sidebar
@@ -119,9 +119,9 @@ function SuperAdminDashboard({ user }: { user: any }) {
           {/* Stats */}
           <section style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "1rem" }}>
             {[
-              { label: "Total Admins", value: "3", icon: <Shield size={20} />, color: "#3b82f6", href: "/admins" },
-              { label: "Total Clients", value: "12", icon: <Users size={20} />, color: "#10b981", href: "/clients" },
-              { label: "Total Leads", value: "1,247", icon: <TrendingUp size={20} />, color: "#f59e0b", href: "/all-leads" },
+              { label: "Total Admins", value: adminCount.toString(), icon: <Shield size={20} />, color: "#3b82f6", href: "/admins" },
+              { label: "Total Clients", value: clientCount.toString(), icon: <Users size={20} />, color: "#10b981", href: "/clients" },
+              { label: "Total Leads", value: leadCount.toLocaleString(), icon: <TrendingUp size={20} />, color: "#f59e0b", href: "/all-leads" },
               { label: "System Status", value: "Active", icon: <CheckCircle2 size={20} />, color: "#10b981", href: null },
             ].map((s) => (
               <Link 
@@ -209,7 +209,28 @@ function SuperAdminDashboard({ user }: { user: any }) {
 }
 
 // Admin/Client: Lead Dashboard View  
-function AdminDashboard({ user }: { user: any }) {
+function AdminDashboard({ user, totalLeads }: { user: any, totalLeads: number }) {
+  // Mock stats using real totalLeads count
+  const stats = [
+    { label: "Total Leads", value: totalLeads.toString(), icon: <TrendingUp size={20} />, delta: "All time", color: "#3b82f6" },
+    { label: "Converted", value: "0", icon: <UserCheck size={20} />, delta: "0% conversion rate", color: "#10b981" },
+    { label: "Today's Leads", value: "0", icon: <UserPlus size={20} />, delta: "No new leads today", color: "#f59e0b" },
+    { label: "Pending Follow-ups", value: "0", icon: <Bell size={20} />, delta: "No pending", color: "#ef4444" },
+  ];
+
+  const chartData = [
+    { day: "Mon", value: 0 },
+    { day: "Tue", value: 0 },
+    { day: "Wed", value: 0 },
+    { day: "Thu", value: 0 },
+    { day: "Fri", value: 0 },
+    { day: "Sat", value: 0 },
+    { day: "Sun", value: 0 },
+  ];
+  const maxVal = 1;
+
+  const followUps: any[] = [];
+
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: "var(--surface)" }}>
       {/* ── Sidebar ── */}
