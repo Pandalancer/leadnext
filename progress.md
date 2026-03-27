@@ -166,12 +166,22 @@
    - **Why:** Same issue as Edit Lead - named export causing 404
    - **Where:** `src/app/leads/[id]/followup/page.tsx`
 
+7. **Fixed Edit Lead Page 'Could Not Load' Error**
+   - **What:** Replaced undefined CSS variables with hex color values
+   - **Why:** `var(--surface)`, `var(--text-primary)` etc. were not defined, causing runtime error
+   - **Where:** `src/app/leads/[id]/edit/page.tsx`
+
+8. **Fixed Add Followup Page 'Could Not Load' Error**
+   - **What:** Replaced undefined CSS variables with hex color values
+   - **Why:** Same issue as Edit Lead - CSS variables causing runtime error
+   - **Where:** `src/app/leads/[id]/followup/page.tsx`
+
 ### Current Status
 - Leads page grid working correctly (3 columns)
 - Add Lead button working (new page created)
-- Edit Lead button now working (export fixed)
-- Add Followup button now working (export fixed)
-- All lead action routes functional
+- Edit Lead button now working (CSS variables fixed)
+- Add Followup button now working (CSS variables fixed)
+- All lead action routes functional without errors
 
 ---
 
