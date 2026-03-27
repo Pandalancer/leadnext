@@ -132,4 +132,36 @@
 
 ---
 
+## 2026-03-27 - Leads Page Grid & Bug Fixes
+
+### Tasks Completed
+
+1. **Fixed Leads Page Grid Layout**
+   - **What:** Changed from single column to responsive bento-style grid
+   - **Why:** Leads were stacking vertically instead of showing in cards
+   - **Where:** `src/app/leads/leads-client.tsx`
+
+2. **Created /leads/new Page**
+   - **What:** Built complete new lead creation page with modern design
+   - **Why:** Add Lead button was linking to non-existent route (404)
+   - **Where:** `src/app/leads/new/page.tsx`, `src/app/leads/new/new-lead-client.tsx`
+
+3. **Verified Edit Lead & Add Followup Routes**
+   - **What:** Confirmed `/leads/[id]/edit` and `/leads/[id]/followup` exist and work
+   - **Why:** User reported these buttons were going to 404
+   - **Where:** `src/app/leads/[id]/edit/page.tsx`, `src/app/leads/[id]/followup/page.tsx`
+
+4. **Applied Bento-Style Card Design**
+   - **What:** Implemented rounded cards (2rem radius), hover effects, status badges
+   - **Why:** Match stitch design with modern card-based layout
+   - **Where:** `src/app/leads/leads-client.tsx`
+
+### Current Status
+- Leads page now shows responsive grid (3 cols on large, 2 on medium, 1 on mobile)
+- Add Lead button now works correctly
+- All lead action buttons (Edit, Followup) routes verified
+- Bento-style card design deployed
+
+---
+
 *Auto-generated from task history*
