@@ -427,4 +427,4 @@ async function AdminPageServer() {
   return <AdminPageClient user={user} settings={settings} />;
 }
 
-export { AdminPageServer as default };
+export default AdminPageServer;
