@@ -211,7 +211,8 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 
-async function AddFollowUpPageServer({ params }: { params: { id: string } }) {
+async function AddFollowUpPageServer({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const session = await auth();
   if (!session?.user) redirect("/login");
   const user = session.user;
@@ -221,14 +222,14 @@ async function AddFollowUpPageServer({ params }: { params: { id: string } }) {
   }
 
   const lead = await prisma.lead.findFirst({
-    where: { id: params.id, adminId: user.id },
+    where: { id, adminId: user.id },
   });
 
   if (!lead) {
     redirect("/leads");
   }
 
-  return <AddFollowUpPageClient params={params} lead={lead} user={user} />;
+  return <AddFollowUpPageClient params={{ id }} lead={lead} user={user} />;
 }
 
 export default AddFollowUpPageServer;

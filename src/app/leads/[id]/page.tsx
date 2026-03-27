@@ -5,7 +5,8 @@ import { prisma } from "@/lib/prisma";
 import { Sidebar } from "@/components/sidebar";
 import { ArrowLeft, Phone, Mail, MapPin, Calendar, Clock, Edit, Plus, History, MessageCircle, CheckCircle, AlertCircle } from "lucide-react";
 
-export default async function LeadDetailPage({ params }: { params: { id: string } }) {
+export default async function LeadDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const session = await auth();
   if (!session?.user) redirect("/login");
   const user = session.user;
@@ -15,7 +16,7 @@ export default async function LeadDetailPage({ params }: { params: { id: string 
   }
 
   const lead = await prisma.lead.findFirst({
-    where: { id: params.id, adminId: user.id },
+    where: { id, adminId: user.id },
     include: {
       followUps: {
         orderBy: { scheduledAt: "desc" },
