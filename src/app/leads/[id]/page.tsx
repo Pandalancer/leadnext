@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { Sidebar } from "@/components/sidebar";
-import { ArrowLeft, Phone, Mail, MapPin, Calendar, Clock, Edit, Plus, History, MessageCircle, CheckCircle, AlertCircle } from "lucide-react";
+import { ArrowLeft, Phone, Mail, MapPin, Calendar, Clock, Edit, Plus, History, MessageCircle, User, ChevronRight, CheckCircle, AlertCircle } from "lucide-react";
 
 export default async function LeadDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -33,18 +33,20 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
     redirect("/leads");
   }
 
-  const statusColors: Record<string, { bg: string; text: string }> = {
-    NEW: { bg: "#dbeafe", text: "#1e40af" },
-    HOT: { bg: "#fee2e2", text: "#991b1b" },
-    INTERESTED: { bg: "#fef9c3", text: "#713f12" },
-    NOT_INTERESTED: { bg: "#fecaca", text: "#7f1d1d" },
-    NOT_PICKED: { bg: "#fef3c7", text: "#92400e" },
-    CONVERTED: { bg: "#d1fae5", text: "#065f46" },
-    FOLLOW_UP: { bg: "#ede9fe", text: "#5b21b6" },
+  const statusColors: Record<string, { bg: string; text: string; label: string }> = {
+    NEW: { bg: "#f8fafc", text: "#637381", label: "New Lead" },
+    HOT: { bg: "#fee2e2", text: "#991b1b", label: "Hot Lead" },
+    INTERESTED: { bg: "#dae2fd", text: "#3f465c", label: "Interested" },
+    NOT_INTERESTED: { bg: "#fecaca", text: "#7f1d1d", label: "Not Interested" },
+    NOT_PICKED: { bg: "#fef3c7", text: "#92400e", label: "Not Picked" },
+    CONVERTED: { bg: "#85f8c4", text: "#005137", label: "Converted" },
+    FOLLOW_UP: { bg: "#ede9fe", text: "#5b21b6", label: "Follow Up" },
   };
 
+  const statusStyle = statusColors[lead.status] || statusColors.NEW;
+
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "var(--surface)" }}>
+    <div style={{ display: "flex", minHeight: "100vh", background: "#f6fafe" }}>
       <Sidebar
         userRole={user.role}
         userName={user.name ?? undefined}
@@ -52,35 +54,40 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
       />
 
       <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, marginLeft: "240px" }}>
-        {/* Header */}
+        {/* Glassmorphism Header */}
         <header style={{
-          background: "var(--surface-card)",
-          borderBottom: "1px solid var(--outline-ghost)",
-          padding: "0 1.5rem",
-          height: "56px",
+          background: "rgba(246, 250, 254, 0.8)",
+          backdropFilter: "blur(12px)",
+          borderBottom: "1px solid rgba(0,0,0,0.06)",
+          padding: "0 2rem",
+          height: "80px",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
           gap: "1rem",
+          position: "sticky",
+          top: 0,
+          zIndex: 40,
         }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-            <Link href="/leads" style={{ color: "var(--text-muted)" }}>
-              <ArrowLeft size={18} />
+          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+            <Link href="/leads" style={{ color: "#171c1f", display: "flex", alignItems: "center", gap: "0.5rem", textDecoration: "none", fontSize: "0.875rem", fontWeight: 600 }}>
+              <ArrowLeft size={20} />
+              Back
             </Link>
-            <h1 style={{ fontSize: "0.9375rem", fontWeight: "700", color: "var(--text-primary)", margin: 0 }}>
+            <h2 style={{ fontSize: "1.25rem", fontWeight: "900", color: "#171c1f", margin: 0 }}>
               Lead Details
-            </h1>
+            </h2>
           </div>
-          <div style={{ display: "flex", gap: "0.5rem" }}>
+          <div style={{ display: "flex", gap: "0.75rem" }}>
             <Link href={`/leads/${lead.id}/edit`}>
               <button style={{
                 display: "flex", alignItems: "center", gap: "0.5rem",
-                padding: "0.5rem 1rem",
-                background: "transparent",
-                color: "var(--text-secondary)",
-                border: "1px solid var(--outline-ghost)",
-                borderRadius: "0.375rem",
-                fontSize: "0.8125rem",
+                padding: "0.625rem 1.25rem",
+                background: "#e4e9ed",
+                color: "#171c1f",
+                border: "none",
+                borderRadius: "0.75rem",
+                fontSize: "0.875rem",
                 fontWeight: "600",
                 cursor: "pointer",
               }}>
@@ -91,14 +98,15 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
             <Link href={`/leads/${lead.id}/followup`}>
               <button style={{
                 display: "flex", alignItems: "center", gap: "0.5rem",
-                padding: "0.5rem 1rem",
-                background: "var(--emerald)",
+                padding: "0.625rem 1.25rem",
+                background: "linear-gradient(135deg, #006948, #00855d)",
                 color: "white",
                 border: "none",
-                borderRadius: "0.375rem",
-                fontSize: "0.8125rem",
-                fontWeight: "600",
+                borderRadius: "0.75rem",
+                fontSize: "0.875rem",
+                fontWeight: "700",
                 cursor: "pointer",
+                boxShadow: "0 4px 6px rgba(0, 105, 72, 0.2)",
               }}>
                 <Plus size={16} />
                 Add Follow-up
