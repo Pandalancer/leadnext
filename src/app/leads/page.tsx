@@ -293,4 +293,4 @@ async function LeadsPageServer({ searchParams }: { searchParams: { [key: string]
   return <LeadsPageClient leads={leads} user={user} />;
 }
 
-export { LeadsPageServer as default };
+export default LeadsPageServer;
