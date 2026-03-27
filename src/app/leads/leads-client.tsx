@@ -105,7 +105,7 @@ export function LeadsPageClient({ leads, user }: { leads: Lead[]; user: any }) {
         </header>
 
         {/* Page content */}
-        <main style={{ flex: 1, padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+        <main className="main-content" style={{ flex: 1, padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1.5rem" }}>
           {/* Filters */}
           {showFilters && (
             <div className="card" style={{ padding: "1rem", display: "flex", gap: "1rem", alignItems: "center", flexWrap: "wrap" }}>

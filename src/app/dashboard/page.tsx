@@ -264,9 +264,9 @@ function AdminDashboard({ user, totalLeads }: { user: any, totalLeads: number })
         </header>
 
         {/* Page content */}
-        <main style={{ flex: 1, padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+        <main className="main-content" style={{ flex: 1, padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1.5rem" }}>
           {/* Stat cards */}
-          <section style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "1rem" }}>
+          <section className="grid-responsive" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "1rem" }}>
             {stats.map((s) => (
               <div key={s.label} className="stat-card">
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
@@ -295,7 +295,7 @@ function AdminDashboard({ user, totalLeads }: { user: any, totalLeads: number })
           </section>
 
           {/* Bottom grid: chart + followups */}
-          <section style={{ display: "grid", gridTemplateColumns: "1fr 360px", gap: "1rem", alignItems: "start" }}>
+          <section className="grid-responsive" style={{ display: "grid", gridTemplateColumns: "1fr 360px", gap: "1rem", alignItems: "start" }}>
             {/* Lead Activity Chart */}
             <div className="card" style={{ padding: "1.25rem" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.25rem" }}>

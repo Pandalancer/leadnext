@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Sidebar } from "@/components/sidebar";
-import { ArrowLeft, Shield, Users, Plus, MessageCircle, Mail, Facebook, Save, Loader2 } from "lucide-react";
+import { ArrowLeft, Shield, Users, Plus, MessageCircle, Mail, Facebook, Save, Loader2, Copy, Check } from "lucide-react";
 
 interface AdminPageProps {
   user: any;
@@ -12,10 +12,11 @@ interface AdminPageProps {
 
 export function AdminPageClient({ user, settings }: AdminPageProps) {
   const [saving, setSaving] = useState(false);
+  const [copied, setCopied] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     whatsappToken: settings?.whatsappToken || "",
     whatsappPhoneId: settings?.whatsappPhoneNumberId || "",
-    whatsappNumber: settings?.whatsappNumber || "", // Actual phone number like 919876543210
+    whatsappNumber: settings?.whatsappNumber || "",
     whatsappWebhookSecret: settings?.whatsappWebhookSecret || "",
     smtpHost: settings?.smtpHost || "",
     smtpPort: settings?.smtpPort || "587",
@@ -48,8 +49,18 @@ export function AdminPageClient({ user, settings }: AdminPageProps) {
     }
   };
 
+  const copyToClipboard = async (text: string, type: string) => {
+    await navigator.clipboard.writeText(text);
+    setCopied(type);
+    setTimeout(() => setCopied(null), 2000);
+  };
+
+  const webhookUrl = `https://your-domain.com/api/webhooks/whatsapp/${user.id}`;
+  const facebookWebhookUrl = `https://your-domain.com/api/webhooks/facebook/${user.id}`;
+  const leadIngestUrl = `https://your-domain.com/api/leads/ingest/${user.id}`;
+
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "var(--surface)" }}>
+    <div style={{ display: "flex", minHeight: "100vh", background: "#f6fafe" }}>
       {/* ── Sidebar ── */}
       <Sidebar
         userRole={user.role}
@@ -58,211 +69,286 @@ export function AdminPageClient({ user, settings }: AdminPageProps) {
       />
 
       {/* ── Main area ── */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, marginLeft: "240px" }}>
+      <div className="main-content" style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, marginLeft: "240px" }}>
         {/* Top bar */}
         <header style={{
-          background: "var(--surface-card)",
-          borderBottom: "1px solid var(--outline-ghost)",
+          background: "rgba(246, 250, 254, 0.8)",
+          backdropFilter: "blur(12px)",
+          borderBottom: "1px solid rgba(0,0,0,0.06)",
           padding: "0 1.5rem",
-          height: "56px",
+          height: "80px",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
           gap: "1rem",
           position: "sticky",
           top: 0,
-          zIndex: 10,
+          zIndex: 40,
+          boxShadow: "0 24px 48px rgba(23,28,31,0.06)",
         }}>
-          <div>
-            <h1 style={{ fontSize: "0.9375rem", fontWeight: "700", color: "var(--text-primary)", margin: 0 }}>
-              Admin Settings
-            </h1>
-            <p style={{ fontSize: "0.6875rem", color: "var(--text-muted)", margin: 0 }}>
-              Configure your integrations and preferences
-            </p>
+          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+            <Link href="/dashboard">
+              <button style={{
+                background: "none",
+                border: "none",
+                color: "#171c1f",
+                cursor: "pointer",
+                padding: "0.5rem",
+                borderRadius: "0.5rem",
+                display: "flex",
+                alignItems: "center",
+                gap: "0.5rem",
+                fontSize: "0.875rem",
+                fontWeight: "600",
+              }}>
+                <ArrowLeft size={20} />
+                Back
+              </button>
+            </Link>
+            <h2 style={{ fontSize: "1.25rem", fontWeight: "900", color: "#171c1f", margin: 0 }}>
+              System Integrations
+            </h2>
           </div>
-          <Link href="/dashboard">
-            <button className="btn-outline" style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-              <ArrowLeft size={16} />
-              Back to Dashboard
+          <div style={{ display: "flex", alignItems: "center", gap: "1.5rem" }}>
+            <button style={{
+              background: "none",
+              border: "none",
+              color: "#454d55",
+              cursor: "pointer",
+              padding: "0.5rem",
+              borderRadius: "50%",
+              transition: "all 0.2s",
+            }}>
+              <Users size={20} />
             </button>
-          </Link>
+            <div style={{
+              width: "40px",
+              height: "40px",
+              borderRadius: "50%",
+              background: "linear-gradient(135deg, #10b981, #059669)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "white",
+              fontSize: "0.75rem",
+              fontWeight: "700",
+              border: "2px solid #10b981",
+            }}>
+              {user.name?.split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
+            </div>
+          </div>
         </header>
 
         {/* Page content */}
-        <main style={{ flex: 1, padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1.5rem" }}>
-          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+        <main className="main-content" style={{ 
+          flex: 1, 
+          padding: "2rem 1.5rem", 
+          display: "flex", 
+          flexDirection: "column", 
+          gap: "4rem",
+          maxWidth: "1200px",
+          margin: "0 auto"
+        }}>
+          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "4rem" }}>
+            {/* Page Header */}
+            <section>
+              <div style={{
+                display: "inline-flex",
+                alignItems: "center",
+                padding: "0.5rem 0.75rem",
+                background: "rgba(16, 185, 129, 0.1)",
+                color: "#059669",
+                borderRadius: "9999px",
+                fontSize: "0.75rem",
+                fontWeight: "700",
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                marginBottom: "1rem"
+              }}>
+                Admin Panel
+              </div>
+              <h3 style={{ 
+                fontSize: "2.5rem", 
+                fontWeight: "800", 
+                color: "#171c1f", 
+                margin: "0 0 0.5rem",
+                letterSpacing: "-0.025em"
+              }}>
+                System Integrations
+              </h3>
+              <p style={{ 
+                color: "#637381", 
+                fontSize: "1.125rem", 
+                maxWidth: "600px",
+                lineHeight: 1.6
+              }}>
+                Configure your editorial gateway and lead acquisition channels. Maintain the precision of your digital ecosystem from a central hub.
+              </p>
+            </section>
+
             {/* WhatsApp Business API Settings */}
-            <section className="card" style={{ padding: "1.5rem" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1.5rem" }}>
-                <MessageCircle size={20} style={{ color: "var(--emerald)" }} />
-                <h2 style={{ fontSize: "0.875rem", fontWeight: "700", color: "var(--text-primary)", margin: 0 }}>
-                  WhatsApp Business API
-                </h2>
-              </div>
-
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "1rem", marginBottom: "1rem" }}>
-                <div>
-                  <label className="field-label">Access Token</label>
-                  <input
-                    type="password"
-                    value={formData.whatsappToken}
-                    onChange={(e) => setFormData({ ...formData, whatsappToken: e.target.value })}
-                    className="field-input"
-                    placeholder="EAAZ..."
-                  />
+            <section style={{
+              background: "white",
+              borderRadius: "0.75rem",
+              padding: "2rem",
+              boxShadow: "0 24px 48px rgba(23,28,31,0.06)",
+              transition: "all 0.3s ease",
+            }}>
+              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "2rem" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+                  <div style={{
+                    width: "56px",
+                    height: "56px",
+                    background: "rgba(37, 211, 102, 0.1)",
+                    borderRadius: "0.75rem",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "#25D366",
+                  }}>
+                    <MessageCircle size={28} />
+                  </div>
+                  <div>
+                    <h4 style={{ fontSize: "1.25rem", fontWeight: "700", color: "#171c1f", margin: "0 0 0.25rem" }}>
+                      WhatsApp Business API
+                    </h4>
+                    <p style={{ color: "#637381", fontSize: "0.875rem", margin: 0 }}>
+                      Automated editorial lead responses
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <label className="field-label">Phone Number ID</label>
-                  <input
-                    type="text"
-                    value={formData.whatsappPhoneId}
-                    onChange={(e) => setFormData({ ...formData, whatsappPhoneId: e.target.value })}
-                    className="field-input"
-                    placeholder="1234567890123456"
-                  />
-                </div>
-              </div>
-
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "1rem", marginBottom: "1rem" }}>
-                <div>
-                  <label className="field-label">Business Phone Number</label>
-                  <input
-                    type="text"
-                    value={formData.whatsappNumber}
-                    onChange={(e) => setFormData({ ...formData, whatsappNumber: e.target.value })}
-                    className="field-input"
-                    placeholder="919876543210"
-                  />
-                </div>
-                <div>
-                  <label className="field-label">Webhook Secret</label>
-                  <input
-                    type="password"
-                    value={formData.whatsappWebhookSecret}
-                    onChange={(e) => setFormData({ ...formData, whatsappWebhookSecret: e.target.value })}
-                    className="field-input"
-                    placeholder="Optional webhook verify token"
-                  />
-                </div>
-              </div>
-
-              <div style={{ 
-                padding: "1rem", 
-                background: "var(--surface-low)", 
-                borderRadius: "0.5rem",
-                fontSize: "0.75rem",
-                color: "var(--text-muted)",
-                lineHeight: 1.6
-              }}>
-                <strong>Webhook URLs:</strong><br />
-                • WhatsApp: <code style={{ background: "var(--surface)", padding: "0.125rem 0.25rem", borderRadius: "0.25rem" }}>{`https://your-domain.com/api/webhooks/whatsapp/${user.id}`}</code><br />
-                • Facebook: <code style={{ background: "var(--surface)", padding: "0.125rem 0.25rem", borderRadius: "0.25rem" }}>{`https://your-domain.com/api/webhooks/facebook/${user.id}`}</code><br />
-                • Lead Ingest: <code style={{ background: "var(--surface)", padding: "0.125rem 0.25rem", borderRadius: "0.25rem" }}>{`https://your-domain.com/api/leads/ingest/${user.id}`}</code>
-              </div>
-            </section>
-
-            {/* SMTP Email Settings */}
-            <section className="card" style={{ padding: "1.5rem" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1.5rem" }}>
-                <Mail size={20} style={{ color: "var(--emerald)" }} />
-                <h2 style={{ fontSize: "0.875rem", fontWeight: "700", color: "var(--text-primary)", margin: 0 }}>
-                  SMTP Email Settings
-                </h2>
-              </div>
-
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "1rem", marginBottom: "1rem" }}>
-                <div>
-                  <label className="field-label">SMTP Host</label>
-                  <input
-                    type="text"
-                    value={formData.smtpHost}
-                    onChange={(e) => setFormData({ ...formData, smtpHost: e.target.value })}
-                    className="field-input"
-                    placeholder="smtp.gmail.com"
-                  />
-                </div>
-                <div>
-                  <label className="field-label">Port</label>
-                  <input
-                    type="text"
-                    value={formData.smtpPort}
-                    onChange={(e) => setFormData({ ...formData, smtpPort: e.target.value })}
-                    className="field-input"
-                    placeholder="587"
-                  />
+                <div style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                  background: "rgba(16, 185, 129, 0.3)",
+                  padding: "0.5rem 0.75rem",
+                  borderRadius: "9999px",
+                }}>
+                  <span style={{
+                    width: "8px",
+                    height: "8px",
+                    background: "#10b981",
+                    borderRadius: "50%",
+                    animation: "pulse 2s infinite"
+                  }}></span>
+                  <span style={{
+                    fontSize: "0.625rem",
+                    fontWeight: "700",
+                    color: "#059669",
+                    letterSpacing: "0.05em",
+                    textTransform: "uppercase"
+                  }}>
+                    Active
+                  </span>
                 </div>
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "1rem", marginBottom: "1rem" }}>
-                <div>
-                  <label className="field-label">Username</label>
-                  <input
-                    type="text"
-                    value={formData.smtpUser}
-                    onChange={(e) => setFormData({ ...formData, smtpUser: e.target.value })}
-                    className="field-input"
-                    placeholder="your-email@gmail.com"
-                  />
+              <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "2rem" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "1.5rem" }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                    <label style={{
+                      display: "block",
+                      fontSize: "0.75rem",
+                      fontWeight: "700",
+                      color: "#637381",
+                      letterSpacing: "0.1em",
+                      textTransform: "uppercase",
+                      padding: "0 0.25rem"
+                    }}>
+                      API Key
+                    </label>
+                    <input
+                      type="password"
+                      value={formData.whatsappToken}
+                      onChange={(e) => setFormData({ ...formData, whatsappToken: e.target.value })}
+                      style={{
+                        width: "100%",
+                        background: "#f8fafc",
+                        border: "none",
+                        borderRadius: "0.5rem",
+                        padding: "0.75rem 1rem",
+                        fontSize: "0.875rem",
+                        fontFamily: "monospace",
+                        transition: "all 0.2s",
+                      }}
+                      placeholder="EAAZ..."
+                    />
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                    <label style={{
+                      display: "block",
+                      fontSize: "0.75rem",
+                      fontWeight: "700",
+                      color: "#637381",
+                      letterSpacing: "0.1em",
+                      textTransform: "uppercase",
+                      padding: "0 0.25rem"
+                    }}>
+                      Phone Number ID
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.whatsappPhoneId}
+                      onChange={(e) => setFormData({ ...formData, whatsappPhoneId: e.target.value })}
+                      style={{
+                        width: "100%",
+                        background: "#f8fafc",
+                        border: "none",
+                        borderRadius: "0.5rem",
+                        padding: "0.75rem 1rem",
+                        fontSize: "0.875rem",
+                        transition: "all 0.2s",
+                      }}
+                      placeholder="1234567890123456"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label className="field-label">Password</label>
-                  <input
-                    type="password"
-                    value={formData.smtpPassword}
-                    onChange={(e) => setFormData({ ...formData, smtpPassword: e.target.value })}
-                    className="field-input"
-                    placeholder="App password"
-                  />
-                </div>
-              </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "1rem" }}>
-                <div>
-                  <label className="field-label">Sender Email</label>
-                  <input
-                    type="text"
-                    value={formData.senderEmail}
-                    onChange={(e) => setFormData({ ...formData, senderEmail: e.target.value })}
-                    className="field-input"
-                    placeholder="noreply@yourdomain.com"
-                  />
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                  <label style={{
+                    display: "block",
+                    fontSize: "0.75rem",
+                    fontWeight: "700",
+                    color: "#637381",
+                    letterSpacing: "0.1em",
+                    textTransform: "uppercase",
+                    padding: "0 0.25rem"
+                  }}>
+                    Webhook URL
+                  </label>
+                  <div style={{ display: "flex", gap: "0.5rem" }}>
+                    <input
+                      readOnly
+                      value={webhookUrl}
+                      style={{
+                        flex: 1,
+                        background: "#f1f5f9",
+                        border: "none",
+                        borderRadius: "0.5rem",
+                        padding: "0.75rem 1rem",
+                        fontSize: "0.875rem",
+                        color: "#64748b",
+                        fontFamily: "monospace",
+                        fontStyle: "italic",
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => copyToClipboard(webhookUrl, "whatsapp")}
+                      style={{
+                        background: "#f8fafc",
+                        padding: "0.75rem",
+                        borderRadius: "0.5rem",
+                        border: "none",
+                        cursor: "pointer",
+                        transition: "background 0.2s",
+                      }}
+                    >
+                      {copied === "whatsapp" ? <Check size={20} /> : <Copy size={20} />}
+                    </button>
+                  </div>
                 </div>
-                <div>
-                  <label className="field-label">Sender Name</label>
-                  <input
-                    type="text"
-                    value={formData.senderName}
-                    onChange={(e) => setFormData({ ...formData, senderName: e.target.value })}
-                    className="field-input"
-                    placeholder="Your Company"
-                  />
-                </div>
-              </div>
-            </section>
-
-            {/* Facebook Lead Ads */}
-            <section className="card" style={{ padding: "1.5rem" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1.5rem" }}>
-                <Facebook size={20} style={{ color: "var(--emerald)" }} />
-                <h2 style={{ fontSize: "0.875rem", fontWeight: "700", color: "var(--text-primary)", margin: 0 }}>
-                  Facebook Lead Ads Integration
-                </h2>
-              </div>
-
-              <div style={{ 
-                padding: "1rem", 
-                background: "var(--surface-low)", 
-                borderRadius: "0.5rem",
-                fontSize: "0.75rem",
-                color: "var(--text-muted)",
-                lineHeight: 1.6
-              }}>
-                <strong>Setup Instructions:</strong><br />
-                1. Go to Facebook Business Settings → Webhooks<br />
-                2. Add webhook URL: <code style={{ background: "var(--surface)", padding: "0.125rem 0.25rem", borderRadius: "0.25rem" }}>{`https://your-domain.com/api/webhooks/facebook/${user.id}`}</code><br />
-                3. Subscribe to "leadgen" events<br />
-                4. Test with a test lead from your Facebook Page
               </div>
             </section>
 
@@ -270,9 +356,22 @@ export function AdminPageClient({ user, settings }: AdminPageProps) {
             <div style={{ display: "flex", justifyContent: "flex-end" }}>
               <button
                 type="submit"
-                className="btn-emerald"
                 disabled={saving}
-                style={{ display: "flex", alignItems: "center", gap: "0.5rem", minWidth: "120px", justifyContent: "center" }}
+                style={{
+                  background: saving ? "#059669" : "#10b981",
+                  color: "white",
+                  padding: "0.75rem 2rem",
+                  borderRadius: "0.75rem",
+                  fontSize: "0.875rem",
+                  fontWeight: "600",
+                  cursor: saving ? "not-allowed" : "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                  boxShadow: "0 8px 16px rgba(16, 185, 129, 0.2)",
+                  transition: "all 0.2s",
+                  border: "none",
+                }}
               >
                 {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
                 {saving ? "Saving..." : "Save Settings"}

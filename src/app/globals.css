@@ -446,4 +446,32 @@ body {
     background: rgba(0,0,0,0.5);
     z-index: 99;
   }
+
+  /* Mobile main content adjustments */
+  main, .main-content {
+    margin-left: 0 !important;
+    padding: 1rem !important;
+    padding-top: 4rem !important;
+  }
+
+  /* Mobile cards and forms */
+  .card {
+    margin-bottom: 1rem;
+  }
+
+  /* Mobile grid layouts */
+  .grid-responsive {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+
+  /* Pulse animation */
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
 }
