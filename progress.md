@@ -156,11 +156,22 @@
    - **Why:** Match stitch design with modern card-based layout
    - **Where:** `src/app/leads/leads-client.tsx`
 
+5. **Fixed Edit Lead Button 404**
+   - **What:** Changed export syntax from `export { X as default }` to `export default X`
+   - **Why:** Next.js couldn't recognize the page with named export pattern
+   - **Where:** `src/app/leads/[id]/edit/page.tsx`
+
+6. **Fixed Add Followup Button 404**
+   - **What:** Changed export syntax from `export { X as default }` to `export default X`
+   - **Why:** Same issue as Edit Lead - named export causing 404
+   - **Where:** `src/app/leads/[id]/followup/page.tsx`
+
 ### Current Status
-- Leads page now shows responsive grid (3 cols on large, 2 on medium, 1 on mobile)
-- Add Lead button now works correctly
-- All lead action buttons (Edit, Followup) routes verified
-- Bento-style card design deployed
+- Leads page grid working correctly (3 columns)
+- Add Lead button working (new page created)
+- Edit Lead button now working (export fixed)
+- Add Followup button now working (export fixed)
+- All lead action routes functional
 
 ---
 
