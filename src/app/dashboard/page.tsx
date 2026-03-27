@@ -59,7 +59,7 @@ function SuperAdminDashboard({ user, adminCount, leadCount }: { user: any, admin
         userEmail={user.email ?? undefined}
       />
 
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, marginLeft: "240px" }}>
         {/* Top bar */}
         <header style={{
           background: "var(--surface-card)",
@@ -224,7 +224,7 @@ function AdminDashboard({ user, totalLeads }: { user: any, totalLeads: number })
       />
 
       {/* ── Main area ── */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, marginLeft: "240px" }}>
         {/* Top bar */}
         <header style={{
           background: "var(--surface-card)",

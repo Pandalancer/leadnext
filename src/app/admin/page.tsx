@@ -56,7 +56,7 @@ function AdminPageClient({ user, settings }: AdminPageProps) {
         userEmail={user.email ?? undefined}
       />
 
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, marginLeft: "240px" }}>
         <header style={{
           background: "var(--surface-card)",
           borderBottom: "1px solid var(--outline-ghost)",

@@ -63,7 +63,7 @@ function LeadsPageClient({ leads, user }: { leads: Lead[]; user: any }) {
         userEmail={user.email ?? undefined}
       />
 
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, marginLeft: "240px" }}>
         {/* Header */}
         <header style={{
           background: "var(--surface-card)",
