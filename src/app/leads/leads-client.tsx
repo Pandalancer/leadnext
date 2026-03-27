@@ -383,12 +383,7 @@ export function LeadsPageClient({ leads, user }: { leads: Lead[]; user: any }) {
               )}
             </div>
           ) : (
-            <div style={{ 
-              display: "grid", 
-              gridTemplateColumns: "repeat(3, 1fr)", 
-              gap: "2rem",
-              width: "100%",
-            }}>
+            <div className="leads-grid-container">
               {filteredLeads.map((lead) => {
                 const statusStyles = getStatusStyles(lead.status);
                 return (
