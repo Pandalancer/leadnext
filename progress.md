@@ -176,12 +176,19 @@
    - **Why:** Same issue as Edit Lead - CSS variables causing runtime error
    - **Where:** `src/app/leads/[id]/followup/page.tsx`
 
+9. **Created Comprehensive Architecture Documentation**
+   - **What:** Created ARCHITECTURE.md with complete system overview
+   - **Why:** Developer reference for all components, routes, pages, and implementation
+   - **Where:** `ARCHITECTURE.md`
+
 ### Current Status
 - Leads page grid working correctly (3 columns)
 - Add Lead button working (new page created)
 - Edit Lead button now working (CSS variables fixed)
 - Add Followup button now working (CSS variables fixed)
+- Schedule follow-up links fixed (now goes to leads list)
 - All lead action routes functional without errors
+- Architecture documentation complete
 
 ---
 
