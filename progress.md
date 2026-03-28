@@ -243,3 +243,34 @@
 ### Follow-up
 - Re-ran `npm run build` after the Prisma JSON typing fix and the build completed successfully.
 - The branch is ready for redeploy and runtime verification.
+
+---
+
+## 2026-03-28 - Follow-up Time Picker and Settings/Integrations UI Cleanup
+
+### Tasks Completed
+
+1. **Made the follow-up time field easier to use**
+   - **What:** Added an explicit clock button next to the time input and kept the native `type="time"` picker
+   - **Why:** The previous field did not make the time picker affordance obvious
+   - **Where:** `src/app/leads/[id]/followup/add-followup-client.tsx`
+
+2. **Made the integrations status truthful**
+   - **What:** Changed the WhatsApp badge to show `Configured` only when the required fields exist, and surfaced the real callback URL from `NEXTAUTH_URL`
+   - **Why:** The page was showing an active state and placeholder callback URL even when the integration was incomplete
+   - **Where:** `src/app/admin/page.tsx`, `src/app/admin/admin-client.tsx`
+
+3. **Removed confusing top-right header icon on Integrations**
+   - **What:** Removed the unused users button in the Integrations header
+   - **Why:** It had no action and confused the purpose of the header controls
+   - **Where:** `src/app/admin/admin-client.tsx`
+
+4. **Hidden notification toggles for V1**
+   - **What:** Replaced the fake toggle UI with a temporary notice and TODO for V2
+   - **Why:** The toggles did not actually persist state and should not pretend to be functional yet
+   - **Where:** `src/app/settings/page.tsx`
+
+### Current Status
+- UI now reflects actual integration config more honestly.
+- Notification settings are intentionally hidden until V2.
+- Next step is to verify the updated pages after the next redeploy.

@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Sidebar } from "@/components/sidebar";
-import { ArrowLeft, Calendar, Loader2, Plus } from "lucide-react";
+import { ArrowLeft, Calendar, Clock, Loader2, Plus } from "lucide-react";
 import type { UserRole } from "@prisma/client";
 
 type AppUser = {
@@ -28,6 +28,7 @@ export default function AddFollowUpClient({
   user: AppUser;
 }) {
   const router = useRouter();
+  const timeInputRef = useRef<HTMLInputElement>(null);
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
     scheduledDate: "",
@@ -128,23 +129,55 @@ export default function AddFollowUpClient({
                 </div>
                 <div>
                   <label style={{ display: "block", fontSize: "0.8125rem", fontWeight: "600", color: "#171c1f", marginBottom: "0.5rem" }}>
+                    <Clock size={14} style={{ display: "inline", marginRight: "0.25rem" }} />
                     Time *
                   </label>
-                  <input
-                    type="time"
-                    required
-                    value={formData.scheduledTime}
-                    onChange={(e) => setFormData({ ...formData, scheduledTime: e.target.value })}
-                    style={{
-                      width: "100%",
-                      padding: "0.625rem",
-                      background: "#f8fafc",
-                      border: "1px solid #e4e9ed",
-                      borderRadius: "0.375rem",
-                      fontSize: "0.875rem",
-                      color: "#171c1f",
-                    }}
-                  />
+                  <div style={{ position: "relative" }}>
+                    <input
+                      ref={timeInputRef}
+                      id="followup-time"
+                      type="time"
+                      step={300}
+                      required
+                      value={formData.scheduledTime}
+                      onChange={(e) => setFormData({ ...formData, scheduledTime: e.target.value })}
+                      style={{
+                        width: "100%",
+                        padding: "0.625rem 2.5rem 0.625rem 0.625rem",
+                        background: "#f8fafc",
+                        border: "1px solid #e4e9ed",
+                        borderRadius: "0.375rem",
+                        fontSize: "0.875rem",
+                        color: "#171c1f",
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const input = timeInputRef.current;
+                        if (!input) return;
+                        if (typeof input.showPicker === "function") {
+                          input.showPicker();
+                          return;
+                        }
+                        input.focus();
+                      }}
+                      aria-label="Open time picker"
+                      style={{
+                        position: "absolute",
+                        right: "0.5rem",
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        background: "transparent",
+                        border: "none",
+                        color: "#6d7a72",
+                        cursor: "pointer",
+                        padding: "0.25rem",
+                      }}
+                    >
+                      <Clock size={16} />
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -217,4 +250,3 @@ export default function AddFollowUpClient({
     </div>
   );
 }
-

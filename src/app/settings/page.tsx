@@ -118,15 +118,9 @@ export default async function SettingsPage() {
                 <Bell size={20} style={{ color: "var(--emerald)" }} />
                 <h2 style={{ fontSize: "1rem", fontWeight: "600" }}>Notifications</h2>
               </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-                {["Email notifications for new leads", "Daily summary reports", "Follow-up reminders"].map((setting, i) => (
-                  <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.75rem", background: "var(--surface-low)", borderRadius: "0.375rem" }}>
-                    <span style={{ fontSize: "0.875rem" }}>{setting}</span>
-                    <div style={{ width: "40px", height: "20px", background: i === 0 ? "var(--emerald)" : "var(--outline-ghost)", borderRadius: "9999px", position: "relative" }}>
-                      <div style={{ width: "16px", height: "16px", background: "white", borderRadius: "50%", position: "absolute", top: "2px", left: i === 0 ? "22px" : "2px" }} />
-                    </div>
-                  </div>
-                ))}
+              {/* TODO: Bring notification preferences back in V2 with persisted user settings. */}
+              <div style={{ padding: "0.75rem", background: "var(--surface-low)", borderRadius: "0.375rem", color: "var(--text-muted)", fontSize: "0.875rem" }}>
+                Notification preferences are temporarily hidden for V1. They will return in V2 with saved settings.
               </div>
             </div>
 

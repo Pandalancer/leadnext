@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Sidebar } from "@/components/sidebar";
-import { ArrowLeft, Users, MessageCircle, Save, Loader2, Copy, Check } from "lucide-react";
+import { ArrowLeft, MessageCircle, Save, Loader2, Copy, Check } from "lucide-react";
 import type { UserRole } from "@prisma/client";
 
 interface AdminPageProps {
@@ -23,9 +23,10 @@ interface AdminPageProps {
     smtpPass: string | null;
     emailFrom: string | null;
   };
+  baseUrl: string;
 }
 
-export function AdminPageClient({ user, settings }: AdminPageProps) {
+export function AdminPageClient({ user, settings, baseUrl }: AdminPageProps) {
   const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
   const [formData, setFormData] = useState({
@@ -68,7 +69,12 @@ export function AdminPageClient({ user, settings }: AdminPageProps) {
     setTimeout(() => setCopied(null), 2000);
   };
 
-  const webhookUrl = `https://your-domain.com/api/webhooks/whatsapp/${user.id}`;
+  const isConfigured = Boolean(
+    settings?.whatsappToken && settings.whatsappPhoneNumberId && settings.whatsappWebhookSecret
+  );
+  const webhookUrl = baseUrl
+    ? `${baseUrl}/api/webhooks/whatsapp/${user.id}`
+    : "";
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: "#f6fafe" }}>
       {/* ── Sidebar ── */}
@@ -120,17 +126,6 @@ export function AdminPageClient({ user, settings }: AdminPageProps) {
             </h2>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "1.5rem" }}>
-            <button style={{
-              background: "none",
-              border: "none",
-              color: "#454d55",
-              cursor: "pointer",
-              padding: "0.5rem",
-              borderRadius: "50%",
-              transition: "all 0.2s",
-            }}>
-              <Users size={20} />
-            </button>
             <div style={{
               width: "40px",
               height: "40px",
@@ -231,25 +226,25 @@ export function AdminPageClient({ user, settings }: AdminPageProps) {
                   display: "flex",
                   alignItems: "center",
                   gap: "0.5rem",
-                  background: "rgba(16, 185, 129, 0.3)",
+                  background: isConfigured ? "rgba(16, 185, 129, 0.3)" : "rgba(148, 163, 184, 0.18)",
                   padding: "0.5rem 0.75rem",
                   borderRadius: "9999px",
                 }}>
                   <span style={{
                     width: "8px",
                     height: "8px",
-                    background: "#10b981",
+                    background: isConfigured ? "#10b981" : "#94a3b8",
                     borderRadius: "50%",
                     animation: "pulse 2s infinite"
                   }}></span>
                   <span style={{
                     fontSize: "0.625rem",
                     fontWeight: "700",
-                    color: "#059669",
+                    color: isConfigured ? "#059669" : "#64748b",
                     letterSpacing: "0.05em",
                     textTransform: "uppercase"
                   }}>
-                    Active
+                    {isConfigured ? "Configured" : "Not Configured"}
                   </span>
                 </div>
               </div>
@@ -325,12 +320,13 @@ export function AdminPageClient({ user, settings }: AdminPageProps) {
                     textTransform: "uppercase",
                     padding: "0 0.25rem"
                   }}>
-                    Webhook URL
-                  </label>
+                      WhatsApp Callback URL
+                    </label>
                   <div style={{ display: "flex", gap: "0.5rem" }}>
                     <input
                       readOnly
                       value={webhookUrl}
+                      placeholder="Set NEXTAUTH_URL to generate the callback URL"
                       style={{
                         flex: 1,
                         background: "#f1f5f9",
@@ -345,19 +341,24 @@ export function AdminPageClient({ user, settings }: AdminPageProps) {
                     />
                     <button
                       type="button"
+                      disabled={!webhookUrl}
                       onClick={() => copyToClipboard(webhookUrl, "whatsapp")}
                       style={{
                         background: "#f8fafc",
                         padding: "0.75rem",
                         borderRadius: "0.5rem",
                         border: "none",
-                        cursor: "pointer",
+                        cursor: webhookUrl ? "pointer" : "not-allowed",
+                        opacity: webhookUrl ? 1 : 0.5,
                         transition: "background 0.2s",
                       }}
                     >
                       {copied === "whatsapp" ? <Check size={20} /> : <Copy size={20} />}
                     </button>
                   </div>
+                  <p style={{ margin: 0, fontSize: "0.75rem", color: "#64748b" }}>
+                    Use this callback URL in Meta webhook configuration. It is only shown when `NEXTAUTH_URL` is set.
+                  </p>
                 </div>
               </div>
             </section>

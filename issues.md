@@ -36,3 +36,18 @@
 
 **Verification**
 - `npm run build` completed successfully after this change.
+
+## 2026-03-28 - UI affordances were misleading on follow-up, integrations, and settings pages
+
+**Issue**
+- The follow-up form relied on the browser time control without making the picker affordance obvious.
+- The integrations page showed an always-active badge and a placeholder callback URL.
+- The settings page rendered notification toggles that were not backed by persisted settings.
+
+**What I changed**
+- Added an explicit clock trigger beside the follow-up time input.
+- Switched the integrations badge to reflect actual configuration state and wired the callback URL to `NEXTAUTH_URL`.
+- Replaced the notification toggles with a temporary V2 TODO note.
+
+**Why this works**
+- Users now see actual state instead of placeholders, and the pages no longer imply functionality that does not exist yet.

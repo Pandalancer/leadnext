@@ -7,6 +7,7 @@ async function AdminPageServer() {
   const session = await auth();
   if (!session?.user) redirect("/login");
   const user = session.user;
+  const baseUrl = process.env.NEXTAUTH_URL?.replace(/\/$/, "") ?? "";
 
   // Only SUPER_ADMIN and ADMIN can access
   if (user.role !== "SUPER_ADMIN" && user.role !== "ADMIN") {
@@ -20,7 +21,7 @@ async function AdminPageServer() {
     });
   }
 
-  return <AdminPageClient user={user} settings={settings} />;
+  return <AdminPageClient user={user} settings={settings} baseUrl={baseUrl} />;
 }
 
 export default AdminPageServer;
