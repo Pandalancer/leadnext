@@ -193,3 +193,34 @@
 ---
 
 *Auto-generated from task history*
+
+---
+
+## 2026-03-28 - Proxy Convention Check + Smoke-Test Prep
+
+### Tasks Completed
+
+1. **Reviewed legacy PHP architecture to align the rewrite**
+   - **What:** Read `leadcrm/.github/architecture-review.md`
+   - **Why:** Ensure the Next.js multi-tenant rewrite preserves the PHP system’s core flows (lead CRUD, follow-up reminders, WhatsApp/Facebook ingest)
+   - **Where:** `../leadcrm/.github/architecture-review.md`
+
+2. **Validated Next.js 16 “Proxy” convention (middleware rename)**
+   - **What:** Confirmed this codebase correctly uses `proxy.ts` rather than `middleware.ts`
+   - **Why:** Next.js 16 deprecates `middleware` in favor of `proxy`; route gating/auth happens in Proxy for this app
+   - **Where:** `src/proxy.ts`, `node_modules/next/dist/docs/.../proxy.md`
+
+3. **Attempted to run a full build for page/endpoint smoke testing**
+   - **What:** Ran `npm run build` (which runs `prisma generate && next build`)
+   - **Why:** Needed to verify every page and API endpoint loads cleanly
+   - **Outcome:** Failed in sandbox with `Error: spawn EPERM` during `prisma generate`
+   - **Where:** `package.json` (`build` script)
+
+4. **Created per-project issues log**
+   - **What:** Added `leadcrm-next/issues.md`
+   - **Why:** Track blockers and their resolutions (append-only)
+   - **Where:** `issues.md`
+
+### Current Status
+- Build + route verification can’t be executed from inside the sandbox due to `spawn EPERM`.
+- Next step is to rerun build and smoke tests outside the sandbox and then address any failing routes (specifically the earlier “slug vs slug?” symptom for Add Lead / Add Follow-up).

@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { LeadsPageClient } from "./leads-client";
 
-async function LeadsPageServer({ searchParams }: { searchParams: { [key: string]: string | undefined } }) {
+async function LeadsPageServer() {
   const session = await auth();
   if (!session?.user) redirect("/login");
   const user = session.user;

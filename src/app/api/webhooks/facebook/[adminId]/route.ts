@@ -1,8 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { decrypt } from "@/lib/crypto";
+import crypto from "crypto";
 
 // Facebook Lead Ads webhook endpoint - per-admin route
 // URL: /api/webhooks/facebook/[adminId]
+
+function verifyHubSignature256(rawBody: string, signatureHeader: string, secret: string) {
+  const [algo, sentHex] = signatureHeader.split("=", 2);
+  if (algo !== "sha256" || !sentHex || sentHex.length < 32) return false;
+
+  const expectedHex = crypto.createHmac("sha256", secret).update(rawBody, "utf8").digest("hex");
+  const expected = Buffer.from(expectedHex, "hex");
+
+  let sent: Buffer;
+  try {
+    sent = Buffer.from(sentHex, "hex");
+  } catch {
+    return false;
+  }
+
+  if (sent.length !== expected.length) return false;
+  return crypto.timingSafeEqual(sent, expected);
+}
 
 export async function GET(
   request: NextRequest,
@@ -18,18 +38,26 @@ export async function GET(
     return new NextResponse("Invalid mode", { status: 400 });
   }
 
-  // Verify admin exists and is active
-  const admin = await prisma.user.findFirst({
-    where: { 
-      id: adminId, 
-      role: "ADMIN",
-      status: "ACTIVE" 
+  // Verify admin exists, is active, and has a configured secret.
+  const settings = await prisma.adminSettings.findUnique({
+    where: { adminId },
+    select: {
+      whatsappWebhookSecret: true,
+      admin: { select: { id: true, role: true, status: true } },
     },
-    select: { id: true }
   });
 
-  if (!admin) {
+  if (!settings || settings.admin?.role !== "ADMIN" || settings.admin?.status !== "ACTIVE") {
     return new NextResponse("Admin not found or inactive", { status: 404 });
+  }
+
+  if (!settings.whatsappWebhookSecret) {
+    return new NextResponse("Admin not configured", { status: 404 });
+  }
+
+  const secret = decrypt(settings.whatsappWebhookSecret);
+  if (!verifyToken || verifyToken !== secret) {
+    return new NextResponse("Forbidden", { status: 403 });
   }
 
   // Facebook sends the challenge back for verification
@@ -46,21 +74,34 @@ export async function POST(
 ) {
   try {
     const { adminId } = await params;
-    // 1. Verify admin exists and is active
-    const admin = await prisma.user.findFirst({
-      where: { 
-        id: adminId, 
-        role: "ADMIN",
-        status: "ACTIVE" 
+    const settings = await prisma.adminSettings.findUnique({
+      where: { adminId },
+      select: {
+        whatsappWebhookSecret: true,
+        admin: { select: { id: true, role: true, status: true } },
       },
-      select: { id: true }
     });
 
-    if (!admin) {
+    if (!settings || settings.admin?.role !== "ADMIN" || settings.admin?.status !== "ACTIVE") {
       return NextResponse.json({ error: "Admin not found or inactive" }, { status: 404 });
     }
 
-    const body = await request.json();
+    if (!settings.whatsappWebhookSecret) {
+      return NextResponse.json({ error: "Webhook not configured" }, { status: 404 });
+    }
+
+    const secret = decrypt(settings.whatsappWebhookSecret);
+    const signature = request.headers.get("x-hub-signature-256");
+    if (!signature) {
+      return NextResponse.json({ error: "Missing signature" }, { status: 401 });
+    }
+
+    const rawBody = await request.text();
+    if (!verifyHubSignature256(rawBody, signature, secret)) {
+      return NextResponse.json({ error: "Invalid signature" }, { status: 403 });
+    }
+
+    const body = JSON.parse(rawBody);
     
     // Facebook sends leadgen_id in real webhooks
     // For direct POST integration, we accept lead data directly

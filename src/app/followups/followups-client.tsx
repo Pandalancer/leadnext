@@ -2,11 +2,27 @@
 
 import Link from "next/link";
 import { Sidebar } from "@/components/sidebar";
-import { ArrowLeft, Calendar, Clock, CheckCircle, Phone, Users, Bell, Plus, Search } from "lucide-react";
+import { ArrowLeft, Calendar, Clock, Phone, Bell, Plus, Search } from "lucide-react";
+import type { UserRole } from "@prisma/client";
 
 interface FollowupsClientProps {
-  user: any;
-  followUps: any[];
+  user: {
+    id: string;
+    email: string;
+    name?: string | null;
+    role: UserRole;
+  };
+  followUps: Array<{
+    id: string;
+    scheduledAt: string | Date;
+    notes: string | null;
+    lead: {
+      id: string;
+      name: string;
+      phone: string;
+      status: string;
+    };
+  }>;
 }
 
 export function FollowupsClient({ user, followUps }: FollowupsClientProps) {

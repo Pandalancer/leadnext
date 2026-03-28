@@ -4,7 +4,8 @@ import { useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Sidebar } from "@/components/sidebar";
-import { ArrowLeft, Plus, Filter, Search, X, Users, Bell, UserPlus, Mail, Phone, ChevronRight } from "lucide-react";
+import { ArrowLeft, Plus, Filter, Search, X, Users, Bell, Mail, Phone, ChevronRight } from "lucide-react";
+import type { UserRole } from "@prisma/client";
 
 interface Lead {
   id: string;
@@ -17,7 +18,13 @@ interface Lead {
   createdAt: Date;
 }
 
-export function LeadsPageClient({ leads, user }: { leads: Lead[]; user: any }) {
+export function LeadsPageClient({
+  leads,
+  user,
+}: {
+  leads: Lead[];
+  user: { id: string; email: string; name?: string | null; role: UserRole };
+}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [showFilters, setShowFilters] = useState(false);

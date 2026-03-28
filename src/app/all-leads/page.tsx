@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { Sidebar } from "@/components/sidebar";
-import { ArrowLeft, LayoutDashboard, Filter } from "lucide-react";
+import { ArrowLeft, Filter } from "lucide-react";
 
 export default async function AllLeadsPage() {
   const session = await auth();
@@ -82,7 +82,7 @@ export default async function AllLeadsPage() {
               </div>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-                {leads.map((lead: any) => (
+                {leads.map((lead) => (
                   <Link 
                     key={lead.id} 
                     href={`/all-leads/${lead.id}`}

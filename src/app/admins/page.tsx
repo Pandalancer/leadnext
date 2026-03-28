@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { Sidebar } from "@/components/sidebar";
-import { ArrowLeft, Users, Plus } from "lucide-react";
+import { ArrowLeft, Plus } from "lucide-react";
 
 export default async function AdminsPage() {
   const session = await auth();
@@ -82,7 +82,7 @@ export default async function AdminsPage() {
               </div>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-                {admins.map((admin: any) => (
+                {admins.map((admin) => (
                   <div 
                     key={admin.id} 
                     style={{

@@ -3,11 +3,26 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Sidebar } from "@/components/sidebar";
-import { ArrowLeft, Shield, Users, Plus, MessageCircle, Mail, Facebook, Save, Loader2, Copy, Check } from "lucide-react";
+import { ArrowLeft, Users, MessageCircle, Save, Loader2, Copy, Check } from "lucide-react";
+import type { UserRole } from "@prisma/client";
 
 interface AdminPageProps {
-  user: any;
-  settings: any;
+  user: {
+    id: string;
+    email: string;
+    name?: string | null;
+    role: UserRole;
+  };
+  settings: null | {
+    whatsappToken: string | null;
+    whatsappPhoneNumberId: string | null;
+    whatsappWebhookSecret: string | null;
+    smtpHost: string | null;
+    smtpPort: number | null;
+    smtpUser: string | null;
+    smtpPass: string | null;
+    emailFrom: string | null;
+  };
 }
 
 export function AdminPageClient({ user, settings }: AdminPageProps) {
@@ -16,14 +31,12 @@ export function AdminPageClient({ user, settings }: AdminPageProps) {
   const [formData, setFormData] = useState({
     whatsappToken: settings?.whatsappToken || "",
     whatsappPhoneId: settings?.whatsappPhoneNumberId || "",
-    whatsappNumber: settings?.whatsappNumber || "",
     whatsappWebhookSecret: settings?.whatsappWebhookSecret || "",
     smtpHost: settings?.smtpHost || "",
     smtpPort: settings?.smtpPort || "587",
     smtpUser: settings?.smtpUser || "",
     smtpPassword: settings?.smtpPass || "",
     senderEmail: settings?.emailFrom || "",
-    senderName: settings?.senderName || "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -42,7 +55,7 @@ export function AdminPageClient({ user, settings }: AdminPageProps) {
       } else {
         alert("Failed to save settings");
       }
-    } catch (error) {
+    } catch {
       alert("Error saving settings");
     } finally {
       setSaving(false);
@@ -56,9 +69,6 @@ export function AdminPageClient({ user, settings }: AdminPageProps) {
   };
 
   const webhookUrl = `https://your-domain.com/api/webhooks/whatsapp/${user.id}`;
-  const facebookWebhookUrl = `https://your-domain.com/api/webhooks/facebook/${user.id}`;
-  const leadIngestUrl = `https://your-domain.com/api/leads/ingest/${user.id}`;
-
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: "#f6fafe" }}>
       {/* ── Sidebar ── */}

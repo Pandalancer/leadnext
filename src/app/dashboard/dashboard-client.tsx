@@ -9,16 +9,20 @@ import {
   UserPlus, 
   Bell, 
   Calendar,
-  Users,
-  ArrowLeft,
   Plus,
   Search,
   Settings,
   Activity
 } from "lucide-react";
+import type { UserRole } from "@prisma/client";
 
 interface DashboardClientProps {
-  user: any;
+  user: {
+    id: string;
+    email: string;
+    name?: string | null;
+    role: UserRole;
+  };
   totalLeads: number;
 }
 
@@ -46,7 +50,7 @@ export function DashboardClient({ user, totalLeads }: DashboardClientProps) {
   ];
   
   const maxVal = Math.max(...chartData.map(d => d.value), 1);
-  const followUps: any[] = [];
+  const followUps: Array<{ lead?: { name?: string | null }; date?: string }> = [];
 
   const stats = [
     { label: "Total Leads", value: totalLeads.toString(), icon: <TrendingUp size={20} />, delta: "All time", color: "#3b82f6" },

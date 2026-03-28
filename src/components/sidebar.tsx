@@ -133,6 +133,9 @@ export function Sidebar({ userRole, userName, userEmail }: SidebarProps) {
               <div className="sidebar-user-role">
                 {userRole ? userRole.toLowerCase().replace("_", " ") : "user"}
               </div>
+              {userEmail && (
+                <div className="sidebar-user-role">{userEmail}</div>
+              )}
             </div>
             <ChevronUp 
               size={16} 

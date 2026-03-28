@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { decrypt } from "@/lib/crypto";
 
 // Public API endpoint for lead ingestion - per-admin route
 // URL: /api/leads/ingest/[adminId]
-// Security: Anyone with the URL can POST leads for this admin
+// Security: Requires a per-admin secret header.
+
+const INGEST_SECRET_HEADER = "x-leadcrm-ingest-secret";
 
 export async function POST(
   request: NextRequest,
@@ -11,21 +14,29 @@ export async function POST(
 ) {
   try {
     const { adminId } = await params;
-    // 1. Validate adminId from URL
-    const admin = await prisma.user.findFirst({
-      where: { 
-        id: adminId, 
-        role: "ADMIN",
-        status: "ACTIVE" 
+    const settings = await prisma.adminSettings.findUnique({
+      where: { adminId },
+      select: {
+        whatsappWebhookSecret: true,
+        admin: { select: { id: true, role: true, status: true } },
       },
-      select: { id: true }
     });
 
-    if (!admin) {
+    if (!settings || settings.admin?.role !== "ADMIN" || settings.admin?.status !== "ACTIVE") {
       return NextResponse.json(
         { error: "Admin not found or inactive" },
         { status: 404 }
       );
+    }
+
+    if (!settings.whatsappWebhookSecret) {
+      return NextResponse.json({ error: "Ingest not configured" }, { status: 404 });
+    }
+
+    const secret = decrypt(settings.whatsappWebhookSecret);
+    const provided = request.headers.get(INGEST_SECRET_HEADER);
+    if (!provided || provided !== secret) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const data = await request.json();
@@ -112,6 +123,10 @@ export async function GET(
     message: "Lead ingestion endpoint",
     adminId: adminId,
     usage: "POST with {name, phone, email?, city?, source?}",
+    auth: {
+      header: INGEST_SECRET_HEADER,
+      note: "Set this to the per-admin secret configured in AdminSettings.",
+    },
     note: "adminId is taken from URL, not body",
   });
 }

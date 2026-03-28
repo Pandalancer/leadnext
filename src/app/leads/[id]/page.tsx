@@ -3,7 +3,8 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { Sidebar } from "@/components/sidebar";
-import { ArrowLeft, Phone, Mail, MapPin, Calendar, Clock, Edit, Plus, History, MessageCircle, User, ChevronRight, CheckCircle, AlertCircle } from "lucide-react";
+import DeleteLeadButton from "./delete-lead-button";
+import { ArrowLeft, Phone, Mail, MapPin, Calendar, Clock, Edit, Plus, History, MessageCircle, CheckCircle, AlertCircle } from "lucide-react";
 
 export default async function LeadDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -42,8 +43,6 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
     CONVERTED: { bg: "#85f8c4", text: "#005137", label: "Converted" },
     FOLLOW_UP: { bg: "#ede9fe", text: "#5b21b6", label: "Follow Up" },
   };
-
-  const statusStyle = statusColors[lead.status] || statusColors.NEW;
 
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: "#f6fafe" }}>
@@ -95,6 +94,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
                 Edit Lead
               </button>
             </Link>
+            <DeleteLeadButton leadId={lead.id} />
             <Link href={`/leads/${lead.id}/followup`}>
               <button style={{
                 display: "flex", alignItems: "center", gap: "0.5rem",

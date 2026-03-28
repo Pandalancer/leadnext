@@ -1,6 +1,6 @@
 # LeadCRM - Complete Walkthrough
 
-A Next.js 14 Lead Management CRM with WhatsApp and Facebook Lead Ads integration.
+A Next.js Lead Management CRM with WhatsApp and Facebook Lead Ads integration.
 
 ---
 
@@ -70,7 +70,8 @@ DATABASE_URL="postgresql://postgres:password@host:5432/db"
 DIRECT_URL="postgresql://postgres:password@host:5432/db"
 
 # Auth
-AUTH_SECRET="your-random-secret-min-32-chars"
+NEXTAUTH_SECRET="your-random-secret-min-32-chars"
+NEXTAUTH_URL="https://your-domain.com"
 
 # Encryption (32 bytes hex, 64 characters)
 # Generate with: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
@@ -263,6 +264,7 @@ Use the lead ingestion endpoint from your Facebook Ads webhook:
 ```
 POST https://your-domain.com/api/leads/ingest/{your_admin_id}
 Content-Type: application/json
+x-leadcrm-ingest-secret: <per-admin secret>
 
 {
   "name": "John Doe",
@@ -274,6 +276,7 @@ Content-Type: application/json
 ```
 
 **Note:** adminId is now in the URL, not the body
+**Security:** `x-leadcrm-ingest-secret` must match the per-admin secret configured in Admin Settings.
 
 #### Option 2: Meta Webhook
 1. Facebook Business Manager → Lead Access → Webhooks
@@ -282,6 +285,7 @@ Content-Type: application/json
 4. Verify webhook
 
 **Note:** Each admin has their own webhook URL with their adminId
+**Verification:** The webhook verification request must include `hub.verify_token` matching the per-admin secret configured in Admin Settings.
 
 ### Lead Data Mapping
 | Facebook Field | CRM Field |
@@ -379,6 +383,7 @@ Content-Type: application/json
 ```
 POST /api/leads/ingest/{adminId}
 Content-Type: application/json
+x-leadcrm-ingest-secret: <per-admin secret>
 
 {
   "name": "Lead Name",
@@ -390,6 +395,7 @@ Content-Type: application/json
 ```
 
 **Note:** adminId is required in URL path, not in request body
+**Security:** `x-leadcrm-ingest-secret` must match the per-admin secret configured in Admin Settings.
 
 ### Admin Settings
 
@@ -421,7 +427,7 @@ POST /api/webhooks/whatsapp/{adminId}
 
 #### Facebook Lead Webhook
 ```
-GET /api/webhooks/facebook/{adminId}?hub.mode=subscribe&hub.challenge=xxx
+GET /api/webhooks/facebook/{adminId}?hub.mode=subscribe&hub.verify_token=xxx&hub.challenge=xxx
 POST /api/webhooks/facebook/{adminId}
 ```
 
@@ -433,6 +439,8 @@ POST /api/webhooks/facebook/{adminId}
 2. **Phone Uniqueness:** Phone numbers are unique per admin (not globally)
 3. **Role Access:** All routes check user role before serving data
 4. **Session:** Secure HTTP-only cookies via NextAuth
+5. **Webhook authenticity:** WhatsApp/Facebook webhook POST requests are validated using `x-hub-signature-256` against the per-admin secret
+6. **Ingest auth:** `/api/leads/ingest/{adminId}` requires `x-leadcrm-ingest-secret`
 
 ---
 

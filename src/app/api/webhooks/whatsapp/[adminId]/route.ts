@@ -1,9 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { decrypt } from "@/lib/crypto";
+import crypto from "crypto";
 
 // WhatsApp webhook verification (GET) and message receiver (POST)
 // URL: /api/webhooks/whatsapp/[adminId]
+
+function verifyHubSignature256(rawBody: string, signatureHeader: string, secret: string) {
+  // Meta webhooks use: "sha256=<hex>"
+  const [algo, sentHex] = signatureHeader.split("=", 2);
+  if (algo !== "sha256" || !sentHex || sentHex.length < 32) return false;
+
+  const expectedHex = crypto.createHmac("sha256", secret).update(rawBody, "utf8").digest("hex");
+  const expected = Buffer.from(expectedHex, "hex");
+
+  let sent: Buffer;
+  try {
+    sent = Buffer.from(sentHex, "hex");
+  } catch {
+    return false;
+  }
+
+  if (sent.length !== expected.length) return false;
+  return crypto.timingSafeEqual(sent, expected);
+}
 
 export async function GET(
   request: NextRequest,
@@ -63,14 +83,22 @@ export async function POST(
       return NextResponse.json({ error: "Not found or inactive" }, { status: 404 });
     }
 
-    // 2. Validate X-Hub-Signature-256 if present
-    const signature = request.headers.get("x-hub-signature-256");
-    if (signature && settings.whatsappWebhookSecret) {
-      // Optional: verify signature against decrypted secret
-      // For now, we proceed without strict signature validation
+    if (!settings.whatsappWebhookSecret) {
+      return NextResponse.json({ error: "Webhook not configured" }, { status: 404 });
     }
 
-    const body = await request.json();
+    const secret = decrypt(settings.whatsappWebhookSecret);
+    const signature = request.headers.get("x-hub-signature-256");
+    if (!signature) {
+      return NextResponse.json({ error: "Missing signature" }, { status: 401 });
+    }
+
+    const rawBody = await request.text();
+    if (!verifyHubSignature256(rawBody, signature, secret)) {
+      return NextResponse.json({ error: "Invalid signature" }, { status: 403 });
+    }
+
+    const body = JSON.parse(rawBody);
     
     // Log for debugging
     console.log("WhatsApp webhook received:", JSON.stringify(body, null, 2));
