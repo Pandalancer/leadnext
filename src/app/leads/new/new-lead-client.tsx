@@ -9,8 +9,10 @@ import type { UserRole } from "@prisma/client";
 
 export default function NewLeadPage({
   user,
+  initialLeadQuestions,
 }: {
   user: { id: string; email: string; name?: string | null; role: UserRole };
+  initialLeadQuestions: { id: string; question: string }[];
 }) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
@@ -23,6 +25,12 @@ export default function NewLeadPage({
     source: "MANUAL",
     remarks: "",
   });
+  const [initialQuestionResponses, setInitialQuestionResponses] = useState<Record<string, string>>(
+    () =>
+      Object.fromEntries(
+        initialLeadQuestions.map((q) => [q.id, ""])
+      )
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,7 +40,11 @@ export default function NewLeadPage({
       const res = await fetch("/api/leads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          initialQuestionResponses:
+            initialLeadQuestions.length > 0 ? initialQuestionResponses : undefined,
+        }),
       });
       
       if (res.ok) {
@@ -242,6 +254,47 @@ export default function NewLeadPage({
                 </div>
               </div>
             </div>
+
+            {initialLeadQuestions.length > 0 && (
+              <div style={{
+                background: "white",
+                borderRadius: "1.5rem",
+                padding: "2rem",
+                boxShadow: "0 4px 6px rgba(0,0,0,0.05)",
+                border: "1px solid rgba(0,0,0,0.02)",
+              }}>
+                <h4 style={{ fontSize: "1.125rem", fontWeight: "700", color: "#171c1f", marginBottom: "1.5rem" }}>
+                  Initial Lead Questions
+                </h4>
+                <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                  {initialLeadQuestions.map((q, index) => (
+                    <div key={q.id} style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                      <label style={{ fontSize: "0.875rem", fontWeight: "600", color: "#374151" }}>
+                        {index + 1}. {q.question}
+                      </label>
+                      <input
+                        type="text"
+                        value={initialQuestionResponses[q.id] ?? ""}
+                        onChange={(e) =>
+                          setInitialQuestionResponses((prev) => ({
+                            ...prev,
+                            [q.id]: e.target.value,
+                          }))
+                        }
+                        placeholder="Enter response"
+                        style={{
+                          padding: "0.75rem 1rem",
+                          borderRadius: "0.75rem",
+                          border: "1px solid #e5e7eb",
+                          fontSize: "0.875rem",
+                          background: "#f9fafb",
+                        }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div style={{
               background: "white",

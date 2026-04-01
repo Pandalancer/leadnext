@@ -2,6 +2,36 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { normalizePhoneToLast10Digits } from "@/lib/phone";
+import { MAX_INITIAL_LEAD_QUESTIONS } from "@/lib/initial-lead-questions";
+
+type InitialQuestionAnswer = {
+  id: string;
+  question: string;
+  answer: string;
+};
+
+function parseInitialQuestionResponses(
+  questions: unknown,
+  responses: unknown
+): InitialQuestionAnswer[] {
+  if (!Array.isArray(questions) || !responses || typeof responses !== "object") return [];
+  return questions
+    .map((item) => {
+      if (!item || typeof item !== "object") return null;
+      const id = "id" in item && typeof item.id === "string" ? item.id : null;
+      const question = "question" in item && typeof item.question === "string" ? item.question : null;
+      if (!id || !question) return null;
+      const answerValue = id in responses ? (responses as Record<string, unknown>)[id] : "";
+      const answer = typeof answerValue === "string" ? answerValue.trim() : "";
+      return {
+        id,
+        question,
+        answer,
+      };
+    })
+    .filter((item): item is InitialQuestionAnswer => Boolean(item))
+    .slice(0, MAX_INITIAL_LEAD_QUESTIONS);
+}
 
 export async function POST(req: NextRequest) {
   const session = await auth();
@@ -25,6 +55,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid phone" }, { status: 400 });
   }
 
+  const adminSettings = await prisma.adminSettings.findUnique({
+    where: { adminId },
+    select: { initialLeadQuestions: true },
+  });
+  const initialQuestionResponses = parseInitialQuestionResponses(
+    adminSettings?.initialLeadQuestions,
+    data?.initialQuestionResponses
+  );
+
   const existing = await prisma.lead.findFirst({
     where: { adminId, phone },
     select: { id: true },
@@ -43,6 +82,7 @@ export async function POST(req: NextRequest) {
       status: typeof data.status === "string" ? data.status : "NEW",
       source: typeof data.source === "string" ? data.source : "MANUAL",
       remarks: typeof data.remarks === "string" && data.remarks.trim() ? data.remarks.trim() : null,
+      initialQuestionResponses: initialQuestionResponses.length ? initialQuestionResponses : null,
     },
   });
 
