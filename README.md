@@ -220,7 +220,8 @@ User ──  AdminSettings
 - **Strategy:** JWT-based sessions via NextAuth.js v5 (Credentials provider)
 - **Password hashing:** bcryptjs with cost factor ≥ 12
 - **Sensitive config:** AES-256-GCM encryption at rest for WhatsApp tokens and SMTP passwords
-- **Route protection:** API handlers enforce auth/role checks directly. Page-route gating logic exists in `src/proxy.ts` and must be wired via a Next.js middleware entrypoint (`middleware.ts` or `src/middleware.ts`) to execute automatically.
+- **Route protection:** API handlers enforce auth/role checks directly.
+- **Page-route gating:** Logic exists in `src/proxy.ts` and must be wired via a Next.js middleware entrypoint (`middleware.ts` or `src/middleware.ts`) to execute automatically.
 
 **Role permissions:**
 
