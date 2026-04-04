@@ -16,8 +16,7 @@ export function parseInitialLeadQuestions(value: unknown): InitialLeadQuestion[]
       if (!id || !question) return null;
       return { id, question };
     })
-    .filter((item): item is InitialLeadQuestion => Boolean(item))
-    .slice(0, MAX_INITIAL_LEAD_QUESTIONS);
+    .filter((item): item is InitialLeadQuestion => Boolean(item));
 }
 
 export function hasValidInitialLeadQuestionCount(questions: InitialLeadQuestion[]) {

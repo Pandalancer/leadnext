@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { normalizePhoneToLast10Digits } from "@/lib/phone";
-import { MAX_INITIAL_LEAD_QUESTIONS } from "@/lib/initial-lead-questions";
+import {
+  hasValidInitialLeadQuestionCount,
+  parseInitialLeadQuestions,
+} from "@/lib/initial-lead-questions";
 
 type InitialQuestionAnswer = {
   id: string;
@@ -14,23 +17,20 @@ function parseInitialQuestionResponses(
   questions: unknown,
   responses: unknown
 ): InitialQuestionAnswer[] {
-  if (!Array.isArray(questions) || !responses || typeof responses !== "object") return [];
-  return questions
+  if (!responses || typeof responses !== "object") return [];
+  const parsedQuestions = parseInitialLeadQuestions(questions);
+  if (!hasValidInitialLeadQuestionCount(parsedQuestions)) return [];
+  return parsedQuestions
     .map((item) => {
-      if (!item || typeof item !== "object") return null;
-      const id = "id" in item && typeof item.id === "string" ? item.id : null;
-      const question = "question" in item && typeof item.question === "string" ? item.question : null;
-      if (!id || !question) return null;
-      const answerValue = id in responses ? (responses as Record<string, unknown>)[id] : "";
+      const answerValue = item.id in responses ? (responses as Record<string, unknown>)[item.id] : "";
       const answer = typeof answerValue === "string" ? answerValue.trim() : "";
       return {
-        id,
-        question,
+        id: item.id,
+        question: item.question,
         answer,
       };
     })
-    .filter((item): item is InitialQuestionAnswer => Boolean(item))
-    .slice(0, MAX_INITIAL_LEAD_QUESTIONS);
+    .filter((item): item is InitialQuestionAnswer => item.answer.length > 0);
 }
 
 export async function POST(req: NextRequest) {
