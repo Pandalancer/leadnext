@@ -84,7 +84,7 @@ DIRECT_URL="postgresql://user:password@host:5432/leadcrm"
 NEXTAUTH_SECRET="your-super-secret-key"
 NEXTAUTH_URL="http://localhost:3000"
 
-# AES-256-GCM encryption key (32-byte hex string)
+# AES-256-GCM encryption key (32-byte key encoded as 64 hex characters)
 ENCRYPTION_KEY="0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
 ```
 
@@ -112,7 +112,12 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## 🔑 Default Credentials (Seed Data)
 
+> ⚠️ For local/dev only. Rotate or remove these immediately in shared or production environments.
 
+| Role | Email | Password |
+|---|---|---|
+| `SUPER_ADMIN` | `superadmin@leadcrm.com` | `SuperAdmin@2024!` |
+| `ADMIN` | `admin@leadcrm.com` | `Admin@2024!` |
 
 ---
 
@@ -167,7 +172,7 @@ User ──  AdminSettings
 |---|---|
 | **User** | `id`, `email`, `password` (bcrypt), `role` (`SUPER_ADMIN` \| `ADMIN`), `status` |
 | **Lead** | `id`, `adminId`, `name`, `phone`, `email`, `city`, `source`, `status`, `whatsappOptIn` |
-| **FollowUp** | `id`, `leadId`, `scheduledAt`, `status` (`PENDING/COMPLETED/SNOOZED/CANCELLED`) |
+| **FollowUp** | `id`, `leadId`, `scheduledAt`, `status` (`PENDING/REMINDED/COMPLETED/SNOOZED/CANCELLED`) |
 | **ActivityLog** | `id`, `userId`, `leadId`, `action`, `details` (JSON) |
 | **AdminSettings** | WhatsApp credentials & SMTP config (AES-256 encrypted) |
 
@@ -183,20 +188,17 @@ User ──  AdminSettings
 
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
-| `GET` | `/api/leads` | Admin | List all leads for the signed-in admin |
 | `POST` | `/api/leads` | Admin | Create a new lead |
-| `GET` | `/api/leads/:id` | Admin | Get a single lead |
 | `PUT` | `/api/leads/:id` | Admin | Update a lead |
 | `DELETE` | `/api/leads/:id` | Admin | Delete a lead |
-| `POST` | `/api/leads/ingest/:adminId` | API key | External lead ingestion endpoint |
+| `POST` | `/api/leads/ingest/:adminId` | `x-leadcrm-ingest-secret` header | External lead ingestion using a per-admin secret |
+| `GET` | `/api/leads/ingest/:adminId` | Public | Returns usage/auth header guidance for the ingest endpoint |
 
 ### Follow-ups
 
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
-| `GET` | `/api/followups` | Admin | List follow-ups |
 | `POST` | `/api/followups` | Admin | Create a follow-up |
-| `PUT` | `/api/followups/:id` | Admin | Update follow-up status |
 
 ### Webhooks
 
@@ -209,8 +211,7 @@ User ──  AdminSettings
 
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
-| `GET` | `/api/admin/settings` | Admin | Retrieve WhatsApp & SMTP configuration |
-| `PUT` | `/api/admin/settings` | Admin | Save WhatsApp & SMTP configuration |
+| `POST` | `/api/admin/settings` | Admin | Create/update encrypted WhatsApp & SMTP configuration |
 
 ---
 
@@ -219,7 +220,7 @@ User ──  AdminSettings
 - **Strategy:** JWT-based sessions via NextAuth.js v5 (Credentials provider)
 - **Password hashing:** bcryptjs with cost factor ≥ 12
 - **Sensitive config:** AES-256-GCM encryption at rest for WhatsApp tokens and SMTP passwords
-- **Route protection:** Middleware (`proxy.ts`) gates every protected route and redirects unauthenticated requests to `/login`
+- **Route protection:** API handlers enforce auth/role checks directly. Page-route gating logic exists in `src/proxy.ts` and must be wired via a Next.js middleware entrypoint (`middleware.ts` or `src/middleware.ts`) to execute automatically.
 
 **Role permissions:**
 
