@@ -145,7 +145,7 @@ leadnext/
 │   │   ├── login/             # Login page
 │   │   └── page.tsx           # Public landing page
 │   ├── auth.ts                # NextAuth configuration
-│   ├── proxy.ts               # Role-based routing middleware
+│   ├── proxy.ts               # Page-route gating logic (wire via middleware entrypoint)
 │   ├── components/
 │   │   ├── sidebar.tsx        # Navigation sidebar
 │   │   └── providers.tsx      # React Query + Session providers
@@ -191,7 +191,7 @@ User ──  AdminSettings
 | `POST` | `/api/leads` | Admin | Create a new lead |
 | `PUT` | `/api/leads/:id` | Admin | Update a lead |
 | `DELETE` | `/api/leads/:id` | Admin | Delete a lead |
-| `POST` | `/api/leads/ingest/:adminId` | `x-leadcrm-ingest-secret` header | External lead ingestion using the per-admin secret configured in Admin Settings |
+| `POST` | `/api/leads/ingest/:adminId` | Header auth (`x-leadcrm-ingest-secret`) | External lead ingestion using the per-admin secret configured in Admin Settings |
 | `GET` | `/api/leads/ingest/:adminId` | Public | Returns usage/auth header guidance for the ingest endpoint |
 
 ### Follow-ups
@@ -221,7 +221,7 @@ User ──  AdminSettings
 - **Password hashing:** bcryptjs with cost factor ≥ 12
 - **Sensitive config:** AES-256-GCM encryption at rest for WhatsApp tokens and SMTP passwords
 - **Route protection:** API handlers enforce auth/role checks directly.
-- **Page-route gating:** Centralized gating logic is implemented in `src/proxy.ts`; add a Next.js middleware entrypoint (`middleware.ts` or `src/middleware.ts`) to enable automatic page-level redirects.
+- **Page-route gating:** Centralized gating logic is implemented in `src/proxy.ts`; wire it through a Next.js middleware entrypoint (`middleware.ts` or `src/middleware.ts`) to enable automatic page-level redirects.
 
 **Role permissions:**
 
