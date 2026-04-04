@@ -73,6 +73,7 @@ model AdminSettings {
   // Preferences
   timezone                String   @default("Asia/Kolkata")
   reminderLeadTime        Int      @default(30) // minutes before follow-up to fire reminder
+  initialLeadQuestions    Json?    // Per-admin list of 5-6 initial lead intake questions
 
   updatedAt               DateTime @updatedAt
 }
@@ -104,6 +105,7 @@ model Lead {
   status      LeadStatus  @default(NEW)
   remarks     String?
   whatsappOptIn Boolean   @default(false)
+  initialQuestionResponses Json?   // Captured answers for admin-configured initial questions
 
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt

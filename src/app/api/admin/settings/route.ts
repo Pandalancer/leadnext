@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { encrypt } from "@/lib/crypto";
+import {
+  MAX_INITIAL_LEAD_QUESTIONS,
+  MIN_INITIAL_LEAD_QUESTIONS,
+  hasValidInitialLeadQuestionCount,
+  parseInitialLeadQuestions,
+} from "@/lib/initial-lead-questions";
 
 export async function POST(req: NextRequest) {
   const session = await auth();
@@ -11,6 +17,15 @@ export async function POST(req: NextRequest) {
 
   const adminId = session.user.id;
   const data = await req.json();
+  const initialLeadQuestions = parseInitialLeadQuestions(data.initialLeadQuestions);
+  if (!hasValidInitialLeadQuestionCount(initialLeadQuestions)) {
+    return NextResponse.json(
+      {
+        error: `Initial lead questions must be between ${MIN_INITIAL_LEAD_QUESTIONS} and ${MAX_INITIAL_LEAD_QUESTIONS} items`,
+      },
+      { status: 400 }
+    );
+  }
 
   try {
     // Upsert admin settings with encrypted sensitive fields
@@ -25,6 +40,7 @@ export async function POST(req: NextRequest) {
         smtpUser: data.smtpUser || null,
         smtpPass: data.smtpPassword ? encrypt(data.smtpPassword) : undefined,
         emailFrom: data.senderEmail || null,
+        initialLeadQuestions: initialLeadQuestions.length ? initialLeadQuestions : null,
       },
       create: {
         adminId,
@@ -36,6 +52,7 @@ export async function POST(req: NextRequest) {
         smtpUser: data.smtpUser || null,
         smtpPass: data.smtpPassword ? encrypt(data.smtpPassword) : null,
         emailFrom: data.senderEmail || null,
+        initialLeadQuestions: initialLeadQuestions.length ? initialLeadQuestions : null,
       },
     });
 
