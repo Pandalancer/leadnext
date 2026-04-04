@@ -191,7 +191,7 @@ User ──  AdminSettings
 | `POST` | `/api/leads` | Admin | Create a new lead |
 | `PUT` | `/api/leads/:id` | Admin | Update a lead |
 | `DELETE` | `/api/leads/:id` | Admin | Delete a lead |
-| `POST` | `/api/leads/ingest/:adminId` | `x-leadcrm-ingest-secret` header | External lead ingestion using a per-admin secret |
+| `POST` | `/api/leads/ingest/:adminId` | `x-leadcrm-ingest-secret` header | External lead ingestion using the per-admin secret configured in Admin Settings |
 | `GET` | `/api/leads/ingest/:adminId` | Public | Returns usage/auth header guidance for the ingest endpoint |
 
 ### Follow-ups
@@ -221,7 +221,7 @@ User ──  AdminSettings
 - **Password hashing:** bcryptjs with cost factor ≥ 12
 - **Sensitive config:** AES-256-GCM encryption at rest for WhatsApp tokens and SMTP passwords
 - **Route protection:** API handlers enforce auth/role checks directly.
-- **Page-route gating:** Logic exists in `src/proxy.ts` and must be wired via a Next.js middleware entrypoint (`middleware.ts` or `src/middleware.ts`) to execute automatically.
+- **Page-route gating:** Centralized gating logic is implemented in `src/proxy.ts`; add a Next.js middleware entrypoint (`middleware.ts` or `src/middleware.ts`) to enable automatic page-level redirects.
 
 **Role permissions:**
 
