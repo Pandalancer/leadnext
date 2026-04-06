@@ -78,7 +78,7 @@ export default function AddFollowUpClient({
         userEmail={user.email ?? undefined}
       />
 
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, marginLeft: "240px" }}>
+      <div className="main-content" style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
         <header style={{
           background: "#ffffff",
           borderBottom: "1px solid #e4e9ed",

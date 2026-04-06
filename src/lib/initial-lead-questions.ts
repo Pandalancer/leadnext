@@ -1,4 +1,4 @@
-export const MIN_INITIAL_LEAD_QUESTIONS = 5;
+export const MIN_INITIAL_LEAD_QUESTIONS = 1;
 export const MAX_INITIAL_LEAD_QUESTIONS = 6;
 
 export type InitialLeadQuestion = {
