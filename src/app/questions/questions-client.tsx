@@ -124,8 +124,7 @@ export default function QuestionsClient({ user, questions: initialQuestions }: Q
           boxShadow: "0 24px 48px rgba(23,28,31,0.06)",
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-            <Link href="/dashboard">
-              <button style={{
+            <Link href="/dashboard" style={{
                 background: "none",
                 border: "none",
                 color: "#171c1f",
@@ -137,11 +136,11 @@ export default function QuestionsClient({ user, questions: initialQuestions }: Q
                 gap: "0.5rem",
                 fontSize: "0.875rem",
                 fontWeight: "600",
+                textDecoration: "none",
               }}>
                 <ArrowLeft size={20} />
                 Back
-              </button>
-            </Link>
+              </Link>
             <h2 style={{ fontSize: "1.25rem", fontWeight: "900", color: "#171c1f", margin: 0 }}>
               Lead Questions
             </h2>

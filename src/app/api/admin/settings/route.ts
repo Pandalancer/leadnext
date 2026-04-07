@@ -18,6 +18,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
+  if (data.smtpPort !== undefined && data.smtpPort !== "" && data.smtpPort !== null) {
+    const port = parseInt(data.smtpPort as string, 10);
+    if (isNaN(port) || port < 1 || port > 65535) {
+      return NextResponse.json(
+        { error: "smtpPort must be an integer between 1 and 65535." },
+        { status: 400 }
+      );
+    }
+  }
+
   try {
     // Upsert admin settings with encrypted sensitive fields.
     // initialLeadQuestions is intentionally omitted here; it is managed

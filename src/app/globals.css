@@ -460,8 +460,8 @@ div.main-content {
   }
 
   /* Offset sticky page headers below the fixed mobile header */
-  .main-content > header[style],
-  .main-content > div > header[style] {
+  .main-content > header,
+  .main-content > div > header {
     top: 3.5rem !important;
   }
 
