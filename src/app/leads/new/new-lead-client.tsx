@@ -68,7 +68,7 @@ export default function NewLeadPage({
         userEmail={user.email ?? undefined}
       />
 
-      <div className="main-content" style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, marginLeft: "240px" }}>
+      <div className="main-content" style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
         {/* Top bar */}
         <header style={{
           background: "rgba(246, 250, 254, 0.8)",

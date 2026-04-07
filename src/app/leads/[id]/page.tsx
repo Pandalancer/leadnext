@@ -52,7 +52,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
         userEmail={user.email ?? undefined}
       />
 
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, marginLeft: "240px" }}>
+      <div className="main-content" style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
         {/* Glassmorphism Header */}
         <header style={{
           background: "rgba(246, 250, 254, 0.8)",
@@ -188,6 +188,32 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
                 </div>
               </div>
             </div>
+
+            {/* Initial Question Responses Card */}
+            {(() => {
+              if (!Array.isArray(lead.initialQuestionResponses)) return null;
+              const responses = lead.initialQuestionResponses as { id: string; question: string; answer: string }[];
+              if (responses.length === 0) return null;
+              return (
+                <div className="card" style={{ padding: "1.5rem" }}>
+                  <h3 style={{ fontSize: "1rem", fontWeight: "600", color: "var(--text-primary)", margin: "0 0 1rem 0" }}>
+                    Initial Questions
+                  </h3>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+                    {responses.map((item, i) => (
+                      <div key={item.id || String(i)} style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+                        <div style={{ fontSize: "0.75rem", fontWeight: "600", color: "var(--text-muted)" }}>
+                          {i + 1}. {item.question}
+                        </div>
+                        <div style={{ fontSize: "0.9375rem", color: "var(--text-primary)", paddingLeft: "1rem" }}>
+                          {item.answer}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* Follow-ups Card */}
             <div className="card" style={{ padding: "1.5rem" }}>

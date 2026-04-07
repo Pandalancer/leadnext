@@ -173,6 +173,11 @@ body {
   letter-spacing: 0.02em;
 }
 
+/* ─── Main content area ─────────────────────────────────────────── */
+div.main-content {
+  margin-left: 240px;
+}
+
 /* ─── Sidebar ───────────────────────────────────────────────────── */
 .sidebar {
   width: 240px;
@@ -452,6 +457,12 @@ body {
     margin-left: 0 !important;
     padding: 1rem !important;
     padding-top: 4rem !important;
+  }
+
+  /* Offset sticky page headers below the fixed mobile header */
+  .main-content > header,
+  .main-content > div > header {
+    top: 3.5rem !important;
   }
 
   /* Mobile cards and forms */
