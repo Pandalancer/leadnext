@@ -74,8 +74,10 @@ NEXTAUTH_SECRET="your-random-secret-min-32-chars"
 NEXTAUTH_URL="https://your-domain.com"
 
 # Encryption (32 bytes hex, 64 characters)
-# Generate with: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
-ENCRYPTION_KEY="a1b2c3d4e5f6...64-char-hex-string"
+# Generate with: openssl rand -hex 32
+# Must be exactly 64 hex characters (32 bytes)
+# Do NOT use openssl rand -base64 32 — this will silently fail
+ENCRYPTION_KEY="paste-64-char-hex-string-here"
 ```
 
 ### 2. Database Setup
@@ -91,10 +93,10 @@ npx prisma db seed
 ```
 
 **Default credentials after seed:**
-- **SUPER_ADMIN:** superadmin@leadcrm.com / SuperAdmin@2024!
-- **ADMIN:** admin@leadcrm.com / Admin@2024!
+- **SUPER_ADMIN:** superadmin@leadcrm.com / ChangeMe@SuperAdmin1!
+- **ADMIN:** admin@leadcrm.com / ChangeMe@Admin1!
 
-**⚠️ IMPORTANT:** Change these defaults immediately after first login!
+**⚠️ IMPORTANT:** Change these passwords immediately after first login!
 
 ### 3. Deploy to Vercel
 ```bash

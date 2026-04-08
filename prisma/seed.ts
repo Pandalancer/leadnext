@@ -8,7 +8,7 @@ const prisma = new PrismaClient({})
 
 async function main() {
   // Create Super Admin - CHANGE THESE DEFAULTS IN PRODUCTION
-  const superAdminPassword = await bcrypt.hash('SuperAdmin@2024!', 12)
+  const superAdminPassword = await bcrypt.hash('ChangeMe@SuperAdmin1!', 12)
   const superAdmin = await prisma.user.upsert({
     where: { email: 'superadmin@leadcrm.com' },
     update: { password: superAdminPassword },
@@ -23,7 +23,7 @@ async function main() {
   console.log('Super Admin created:', superAdmin.email)
 
   // Create Admin - CHANGE THESE DEFAULTS IN PRODUCTION
-  const adminPassword = await bcrypt.hash('Admin@2024!', 12)
+  const adminPassword = await bcrypt.hash('ChangeMe@Admin1!', 12)
   const admin = await prisma.user.upsert({
     where: { email: 'admin@leadcrm.com' },
     update: { password: adminPassword },
@@ -84,6 +84,10 @@ async function main() {
     })
   }
   console.log('Sample leads created')
+
+  console.log("⚠️  IMPORTANT: Change default passwords before sharing access with anyone.")
+  console.log("   Super Admin: superadmin@leadcrm.com / ChangeMe@SuperAdmin1!")
+  console.log("   Admin:       admin@leadcrm.com / ChangeMe@Admin1!")
 }
 
 main()
