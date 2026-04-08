@@ -24,7 +24,13 @@ describe('initial-lead-questions', () => {
     });
 
     it('should return true for a count between MIN and MAX', () => {
-      const questions: InitialLeadQuestion[] = Array(3).fill({
+      const middleCount = Math.floor((MIN_INITIAL_LEAD_QUESTIONS + MAX_INITIAL_LEAD_QUESTIONS) / 2);
+      // Ensure we are actually between (not equal to boundaries) if range allows
+      const testCount = middleCount > MIN_INITIAL_LEAD_QUESTIONS && middleCount < MAX_INITIAL_LEAD_QUESTIONS
+        ? middleCount
+        : MIN_INITIAL_LEAD_QUESTIONS + 1;
+
+      const questions: InitialLeadQuestion[] = Array(testCount).fill({
         id: '1',
         question: 'Q1'
       });
