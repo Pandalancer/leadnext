@@ -85,9 +85,9 @@ async function main() {
   }
   console.log('Sample leads created')
 
-  console.log("⚠️  IMPORTANT: Change default passwords before sharing access with anyone.")
-  console.log("   Super Admin: superadmin@leadcrm.com / ChangeMe@SuperAdmin1!")
-  console.log("   Admin:       admin@leadcrm.com / ChangeMe@Admin1!")
+  console.log('⚠️  IMPORTANT: Change default passwords before sharing access with anyone.')
+  console.log('   Super Admin: superadmin@leadcrm.com')
+  console.log('   Admin:       admin@leadcrm.com')
 }
 
 main()

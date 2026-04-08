@@ -76,7 +76,7 @@ NEXTAUTH_URL="https://your-domain.com"
 # Encryption (32 bytes hex, 64 characters)
 # Generate with: openssl rand -hex 32
 # Must be exactly 64 hex characters (32 bytes)
-# Do NOT use openssl rand -base64 32 — this will silently fail
+# Do NOT use openssl rand -base64 32 — base64 output is not hex and will cause runtime encryption/decryption errors (for example, invalid key length)
 ENCRYPTION_KEY="paste-64-char-hex-string-here"
 ```
 
