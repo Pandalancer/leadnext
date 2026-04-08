@@ -4,10 +4,12 @@ import { useState, FormEvent, Suspense } from "react";
 import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react";
+import { isSafeUrl } from "@/lib/url";
 
 function LoginForm() {
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
+  const paramUrl = searchParams.get("callbackUrl");
+  const callbackUrl = isSafeUrl(paramUrl) ? paramUrl! : "/dashboard";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
