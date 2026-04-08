@@ -100,9 +100,6 @@ export async function POST(
 
     const body = JSON.parse(rawBody);
     
-    // Log for debugging
-    console.log("WhatsApp webhook received:", JSON.stringify(body, null, 2));
-    
     // Extract message data
     const entry = body.entry?.[0];
     const changes = entry?.changes?.[0];
