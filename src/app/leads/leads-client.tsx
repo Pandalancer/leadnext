@@ -1,8 +1,9 @@
 "use client";
 
 import type { UserRole } from "@prisma/client";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { getInitials } from "@/lib/utils";
 import Link from "next/link";
 import { Sidebar } from "@/components/sidebar";
 import { ArrowLeft, Plus, Filter, Search, X, Users, Mail, Phone, ChevronRight } from "lucide-react";
@@ -33,15 +34,19 @@ export function LeadsPageClient({
   const statusFilter = searchParams.get("status") || "";
   const searchQuery = searchParams.get("q") || "";
 
-  const filteredLeads = leads.filter((lead) => {
-    const matchesStatus = !statusFilter || lead.status === statusFilter;
-    const matchesSearch = !searchQuery || 
-      lead.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      lead.phone.includes(searchQuery) ||
-      (lead.email && lead.email.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (lead.city && lead.city.toLowerCase().includes(searchQuery.toLowerCase()));
-    return matchesStatus && matchesSearch;
-  });
+  const filteredLeads = useMemo(() => {
+    const lowerSearchQuery = searchQuery.toLowerCase();
+
+    return leads.filter((lead) => {
+      const matchesStatus = !statusFilter || lead.status === statusFilter;
+      const matchesSearch = !searchQuery ||
+        lead.name.toLowerCase().includes(lowerSearchQuery) ||
+        lead.phone.includes(searchQuery) ||
+        (lead.email && lead.email.toLowerCase().includes(lowerSearchQuery)) ||
+        (lead.city && lead.city.toLowerCase().includes(lowerSearchQuery));
+      return matchesStatus && matchesSearch;
+    });
+  }, [leads, statusFilter, searchQuery]);
 
   const updateFilter = (key: string, value: string) => {
     const params = new URLSearchParams(searchParams);
@@ -159,7 +164,7 @@ export function LeadsPageClient({
                 fontSize: "0.75rem",
                 fontWeight: "700",
               }}>
-                {user.name?.split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
+                {getInitials(user.name)}
               </div>
             </div>
           </div>
@@ -427,7 +432,7 @@ export function LeadsPageClient({
                             fontSize: "1rem",
                             fontWeight: "700",
                           }}>
-                            {lead.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
+                            {getInitials(lead.name)}
                           </div>
                         </div>
                         <span style={{
