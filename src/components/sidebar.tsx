@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { useState } from "react";
+import { getInitials } from "@/lib/utils";
 import {
   LayoutDashboard,
   Users,
@@ -54,9 +55,7 @@ export function Sidebar({ userRole, userName, userEmail }: SidebarProps) {
 
   const navItems = userRole === "SUPER_ADMIN" ? superAdminNavItems : adminNavItems;
 
-  const initials = userName
-    ? userName.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()
-    : "U";
+  const initials = getInitials(userName) || "U";
 
   return (
     <>

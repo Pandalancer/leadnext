@@ -98,7 +98,7 @@ export async function POST(
       return NextResponse.json({ error: "Invalid signature" }, { status: 403 });
     }
 
-    let body;
+    let body: any;
     try {
       body = JSON.parse(rawBody);
     } catch {

@@ -22,5 +22,5 @@ export function getInitials(name: string | null | undefined): string {
     }
   }
 
-  return initials.toUpperCase();
+  return initials.toUpperCase().slice(0, 2);
 }

@@ -160,7 +160,7 @@ export default function QuestionsClient({ user, questions: initialQuestions }: Q
               fontWeight: "700",
               border: "2px solid #10b981",
             }}>
-              {user.name?.split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
+              {user.name ? user.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2) : "U"}
             </div>
           </div>
         </header>

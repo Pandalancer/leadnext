@@ -4,19 +4,18 @@ import {
   hasValidInitialLeadQuestionCount,
   parseInitialLeadQuestions,
   MIN_INITIAL_LEAD_QUESTIONS,
-  MAX_INITIAL_LEAD_QUESTIONS,
-  type InitialLeadQuestion
+  MAX_INITIAL_LEAD_QUESTIONS
 } from './initial-lead-questions.ts';
 
 describe('initial-lead-questions', () => {
   describe('hasValidInitialLeadQuestionCount', () => {
     it('should return true for 0 questions', () => {
-      const questions: InitialLeadQuestion[] = [];
+      const questions = [];
       assert.strictEqual(hasValidInitialLeadQuestionCount(questions), true);
     });
 
     it('should return true for MIN_INITIAL_LEAD_QUESTIONS', () => {
-      const questions: InitialLeadQuestion[] = Array(MIN_INITIAL_LEAD_QUESTIONS).fill({
+      const questions = Array(MIN_INITIAL_LEAD_QUESTIONS).fill({
         id: '1',
         question: 'Q1'
       });
@@ -30,7 +29,7 @@ describe('initial-lead-questions', () => {
         ? middleCount
         : MIN_INITIAL_LEAD_QUESTIONS + 1;
 
-      const questions: InitialLeadQuestion[] = Array(testCount).fill({
+      const questions = Array(testCount).fill({
         id: '1',
         question: 'Q1'
       });
@@ -38,7 +37,7 @@ describe('initial-lead-questions', () => {
     });
 
     it('should return true for MAX_INITIAL_LEAD_QUESTIONS', () => {
-      const questions: InitialLeadQuestion[] = Array(MAX_INITIAL_LEAD_QUESTIONS).fill({
+      const questions = Array(MAX_INITIAL_LEAD_QUESTIONS).fill({
         id: '1',
         question: 'Q1'
       });
@@ -46,7 +45,7 @@ describe('initial-lead-questions', () => {
     });
 
     it('should return false for more than MAX_INITIAL_LEAD_QUESTIONS', () => {
-      const questions: InitialLeadQuestion[] = Array(MAX_INITIAL_LEAD_QUESTIONS + 1).fill({
+      const questions = Array(MAX_INITIAL_LEAD_QUESTIONS + 1).fill({
         id: '1',
         question: 'Q1'
       });
