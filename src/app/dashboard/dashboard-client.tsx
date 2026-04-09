@@ -15,6 +15,7 @@ import {
   Settings,
   Activity
 } from "lucide-react";
+import { getInitials } from "@/lib/utils";
 
 
 interface DashboardClientProps {
@@ -134,7 +135,7 @@ export function DashboardClient({ user, totalLeads }: DashboardClientProps) {
               fontWeight: "700",
               border: "2px solid #10b981",
             }}>
-              {user.name?.split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
+              {getInitials(user.name)}
             </div>
           </div>
         </header>
