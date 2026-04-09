@@ -34,13 +34,15 @@ export function LeadsPageClient({
   const searchQuery = searchParams.get("q") || "";
 
   const filteredLeads = useMemo(() => {
+    const lowerSearchQuery = searchQuery.toLowerCase();
+
     return leads.filter((lead) => {
       const matchesStatus = !statusFilter || lead.status === statusFilter;
       const matchesSearch = !searchQuery ||
-        lead.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        lead.name.toLowerCase().includes(lowerSearchQuery) ||
         lead.phone.includes(searchQuery) ||
-        (lead.email && lead.email.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        (lead.city && lead.city.toLowerCase().includes(searchQuery.toLowerCase()));
+        (lead.email && lead.email.toLowerCase().includes(lowerSearchQuery)) ||
+        (lead.city && lead.city.toLowerCase().includes(lowerSearchQuery));
       return matchesStatus && matchesSearch;
     });
   }, [leads, statusFilter, searchQuery]);
