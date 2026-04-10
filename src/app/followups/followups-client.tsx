@@ -2,6 +2,7 @@
 
 import type { UserRole } from "@prisma/client";
 import Link from "next/link";
+import { getInitials } from "@/lib/utils";
 import { Sidebar } from "@/components/sidebar";
 import { ArrowLeft, Calendar, Clock, Phone, Plus, Search } from "lucide-react";
 
@@ -113,7 +114,7 @@ export function FollowupsClient({ user, followUps }: FollowupsClientProps) {
               fontWeight: "700",
               border: "2px solid #10b981",
             }}>
-              {user.name?.split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
+              {getInitials(user.name) || "U"}
             </div>
           </div>
         </header>
