@@ -101,7 +101,8 @@ export async function POST(
       return NextResponse.json({ error: "Invalid signature" }, { status: 403 });
     }
 
-    let body: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let body: any;
     try {
       body = JSON.parse(rawBody);
     } catch {
