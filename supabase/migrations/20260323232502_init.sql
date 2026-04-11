@@ -1,3 +1,6 @@
+-- CreateSchema
+CREATE SCHEMA IF NOT EXISTS "public";
+
 -- CreateEnum
 CREATE TYPE "UserRole" AS ENUM ('SUPER_ADMIN', 'ADMIN', 'CLIENT');
 
@@ -10,17 +13,16 @@ CREATE TYPE "LeadSource" AS ENUM ('MANUAL', 'FACEBOOK', 'WHATSAPP', 'WEBSITE', '
 -- CreateEnum
 CREATE TYPE "LeadStatus" AS ENUM ('NEW', 'INTERESTED', 'NOT_INTERESTED', 'NOT_PICKED', 'HOT', 'CONVERTED', 'FOLLOW_UP');
 
--- CreateEnum
-CREATE TYPE "FollowUpStatus" AS ENUM ('PENDING', 'REMINDED', 'COMPLETED', 'SNOOZED', 'CANCELLED');
-
 -- CreateTable
 CREATE TABLE "User" (
     "id" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "password" TEXT NOT NULL,
     "name" TEXT NOT NULL,
-    "role" "UserRole" NOT NULL DEFAULT 'ADMIN',
+    "role" "UserRole" NOT NULL DEFAULT 'CLIENT',
     "status" "UserStatus" NOT NULL DEFAULT 'ACTIVE',
+    "adminId" TEXT,
+    "settings" JSONB,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "lastLoginAt" TIMESTAMP(3),
@@ -29,39 +31,9 @@ CREATE TABLE "User" (
 );
 
 -- CreateTable
-CREATE TABLE "AdminSettings" (
-    "id" TEXT NOT NULL,
-    "adminId" TEXT NOT NULL,
-    "whatsappToken" TEXT,
-    "whatsappPhoneNumberId" TEXT,
-    "whatsappWebhookSecret" TEXT,
-    "smtpHost" TEXT,
-    "smtpPort" INTEGER,
-    "smtpUser" TEXT,
-    "smtpPass" TEXT,
-    "emailFrom" TEXT,
-    "timezone" TEXT NOT NULL DEFAULT 'Asia/Kolkata',
-    "reminderLeadTime" INTEGER NOT NULL DEFAULT 30,
-    "initialLeadQuestions" JSONB,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "AdminSettings_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "SystemSettings" (
-    "id" TEXT NOT NULL,
-    "settings" JSONB,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-    "updatedBy" TEXT,
-
-    CONSTRAINT "SystemSettings_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
 CREATE TABLE "Lead" (
     "id" TEXT NOT NULL,
-    "adminId" TEXT NOT NULL,
+    "clientId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "phone" TEXT NOT NULL,
     "email" TEXT,
@@ -69,30 +41,13 @@ CREATE TABLE "Lead" (
     "source" "LeadSource" NOT NULL DEFAULT 'MANUAL',
     "status" "LeadStatus" NOT NULL DEFAULT 'NEW',
     "remarks" TEXT,
+    "followUpDate" TIMESTAMP(3),
+    "reminderSent" BOOLEAN NOT NULL DEFAULT false,
     "whatsappOptIn" BOOLEAN NOT NULL DEFAULT false,
-    "initialQuestionResponses" JSONB,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Lead_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "FollowUp" (
-    "id" TEXT NOT NULL,
-    "leadId" TEXT NOT NULL,
-    "adminId" TEXT NOT NULL,
-    "scheduledAt" TIMESTAMP(3) NOT NULL,
-    "status" "FollowUpStatus" NOT NULL DEFAULT 'PENDING',
-    "reminderSentAt" TIMESTAMP(3),
-    "reminderChannel" TEXT,
-    "completedAt" TIMESTAMP(3),
-    "snoozedUntil" TIMESTAMP(3),
-    "notes" TEXT,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "FollowUp_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -107,8 +62,28 @@ CREATE TABLE "ActivityLog" (
     CONSTRAINT "ActivityLog_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "SystemSettings" (
+    "id" TEXT NOT NULL,
+    "whatsappToken" TEXT,
+    "whatsappPhoneNumberId" TEXT,
+    "whatsappWebhookSecret" TEXT,
+    "smtpHost" TEXT,
+    "smtpPort" INTEGER,
+    "smtpUser" TEXT,
+    "smtpPass" TEXT,
+    "settings" JSONB,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "updatedBy" TEXT,
+
+    CONSTRAINT "SystemSettings_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+
+-- CreateIndex
+CREATE INDEX "User_adminId_idx" ON "User"("adminId");
 
 -- CreateIndex
 CREATE INDEX "User_role_idx" ON "User"("role");
@@ -117,34 +92,19 @@ CREATE INDEX "User_role_idx" ON "User"("role");
 CREATE INDEX "User_status_idx" ON "User"("status");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "AdminSettings_adminId_key" ON "AdminSettings"("adminId");
-
--- CreateIndex
-CREATE INDEX "Lead_adminId_idx" ON "Lead"("adminId");
+CREATE INDEX "Lead_clientId_idx" ON "Lead"("clientId");
 
 -- CreateIndex
 CREATE INDEX "Lead_status_idx" ON "Lead"("status");
 
 -- CreateIndex
+CREATE INDEX "Lead_followUpDate_idx" ON "Lead"("followUpDate");
+
+-- CreateIndex
 CREATE INDEX "Lead_phone_idx" ON "Lead"("phone");
 
 -- CreateIndex
-CREATE INDEX "Lead_createdAt_idx" ON "Lead"("createdAt");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Lead_adminId_phone_key" ON "Lead"("adminId", "phone");
-
--- CreateIndex
-CREATE INDEX "FollowUp_leadId_idx" ON "FollowUp"("leadId");
-
--- CreateIndex
-CREATE INDEX "FollowUp_adminId_idx" ON "FollowUp"("adminId");
-
--- CreateIndex
-CREATE INDEX "FollowUp_scheduledAt_idx" ON "FollowUp"("scheduledAt");
-
--- CreateIndex
-CREATE INDEX "FollowUp_status_idx" ON "FollowUp"("status");
+CREATE UNIQUE INDEX "Lead_clientId_phone_key" ON "Lead"("clientId", "phone");
 
 -- CreateIndex
 CREATE INDEX "ActivityLog_userId_idx" ON "ActivityLog"("userId");
@@ -156,16 +116,10 @@ CREATE INDEX "ActivityLog_leadId_idx" ON "ActivityLog"("leadId");
 CREATE INDEX "ActivityLog_createdAt_idx" ON "ActivityLog"("createdAt");
 
 -- AddForeignKey
-ALTER TABLE "AdminSettings" ADD CONSTRAINT "AdminSettings_adminId_fkey" FOREIGN KEY ("adminId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "User" ADD CONSTRAINT "User_adminId_fkey" FOREIGN KEY ("adminId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Lead" ADD CONSTRAINT "Lead_adminId_fkey" FOREIGN KEY ("adminId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "FollowUp" ADD CONSTRAINT "FollowUp_leadId_fkey" FOREIGN KEY ("leadId") REFERENCES "Lead"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "FollowUp" ADD CONSTRAINT "FollowUp_adminId_fkey" FOREIGN KEY ("adminId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Lead" ADD CONSTRAINT "Lead_clientId_fkey" FOREIGN KEY ("clientId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "ActivityLog" ADD CONSTRAINT "ActivityLog_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
