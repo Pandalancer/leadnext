@@ -256,6 +256,30 @@ Configure these URLs in your WhatsApp Business API and Facebook App dashboards, 
 
 > The `vercel.json` in this repo targets the `bom1` (Mumbai) region for low-latency access from India.
 
+
+### Verify production schema after deploy
+
+To confirm newly-added Prisma fields are present in the existing Vercel database:
+
+```bash
+# 1) Pull production env vars (example; requires Vercel CLI in your environment)
+vercel env pull .env.vercel
+
+# 2) Load env vars and run checks
+set -a; source .env.vercel; set +a
+npm run verify:prod-schema
+```
+
+This script checks `prisma migrate status` and verifies these required columns exist in the target DB:
+- `AdminSettings.initialLeadQuestions`
+- `Lead.initialQuestionResponses`
+
+> On Vercel auto-deploy, this verification now runs automatically as part of the build command in `vercel.json`:
+> `prisma migrate deploy && npm run verify:prod-schema && prisma generate && next build`.
+> If required columns are missing, the deployment fails early.
+>
+> A dedicated migration (`prisma/migrations/202604140001_add_missing_initial_question_fields`) now adds these columns on existing databases before verification runs.
+
 ### Environment variables (production)
 
 ```env
@@ -275,6 +299,10 @@ npm run dev      # Start development server (http://localhost:3000)
 npm run build    # prisma generate + next build
 npm run start    # Start production server
 npm run lint     # Run ESLint
+```
+
+```bash
+npm run verify:prod-schema  # Verify required Prisma columns exist in prod DB
 ```
 
 ```bash
