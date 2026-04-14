@@ -1,1 +1,1 @@
-{"buildCommand":"prisma migrate deploy && npm run verify:prod-schema && prisma generate && next build"}
+{"buildCommand":"npm run migrate:deploy:safe && npm run verify:prod-schema && prisma generate && next build"}

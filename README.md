@@ -275,10 +275,11 @@ This script checks `prisma migrate status` and verifies these required columns e
 - `Lead.initialQuestionResponses`
 
 > On Vercel auto-deploy, this verification now runs automatically as part of the build command in `vercel.json`:
-> `prisma migrate deploy && npm run verify:prod-schema && prisma generate && next build`.
+> `npm run migrate:deploy:safe && npm run verify:prod-schema && prisma generate && next build`.
 > If required columns are missing, the deployment fails early.
 >
 > A dedicated migration (`prisma/migrations/202604140001_add_missing_initial_question_fields`) now adds these columns on existing databases before verification runs.
+> The `migrate:deploy:safe` step also handles Prisma `P3005` (non-empty schema) by resolving the `0_init` baseline before retrying deploy.
 
 ### Environment variables (production)
 
@@ -302,6 +303,7 @@ npm run lint     # Run ESLint
 ```
 
 ```bash
+npm run migrate:deploy:safe  # Run migrations with automatic P3005 baseline handling
 npm run verify:prod-schema  # Verify required Prisma columns exist in prod DB
 ```
 
