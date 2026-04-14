@@ -6,6 +6,14 @@ import crypto from "crypto";
 // Facebook Lead Ads webhook endpoint - per-admin route
 // URL: /api/webhooks/facebook/[adminId]
 
+type FacebookWebhookBody = {
+  name?: string;
+  phone?: string;
+  email?: string;
+  city?: string;
+  leadgen_id?: string;
+};
+
 function verifyHubSignature256(rawBody: string, signatureHeader: string, secret: string) {
   const [algo, sentHex] = signatureHeader.split("=", 2);
   if (algo !== "sha256" || !sentHex || sentHex.length < 32) return false;
@@ -101,7 +109,7 @@ export async function POST(
       return NextResponse.json({ error: "Invalid signature" }, { status: 403 });
     }
 
-    let body: any;
+    let body: FacebookWebhookBody;
     try {
       body = JSON.parse(rawBody);
     } catch {

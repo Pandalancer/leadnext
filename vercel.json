@@ -1,1 +1,1 @@
-{"buildCommand":"prisma migrate deploy && prisma generate && next build"}
+{"buildCommand":"ALLOW_PRISMA_BASELINE=1 npm run migrate:deploy:safe && npm run verify:prod-schema && prisma generate && next build"}

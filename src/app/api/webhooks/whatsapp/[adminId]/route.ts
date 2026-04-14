@@ -6,6 +6,20 @@ import crypto from "crypto";
 // WhatsApp webhook verification (GET) and message receiver (POST)
 // URL: /api/webhooks/whatsapp/[adminId]
 
+type WhatsAppWebhookBody = {
+  entry?: Array<{
+    changes?: Array<{
+      value?: {
+        messages?: Array<{
+          type?: string;
+          from?: string;
+          text?: { body?: string };
+        }>;
+      };
+    }>;
+  }>;
+};
+
 function verifyHubSignature256(rawBody: string, signatureHeader: string, secret: string) {
   // Meta webhooks use: "sha256=<hex>"
   const [algo, sentHex] = signatureHeader.split("=", 2);
@@ -98,7 +112,7 @@ export async function POST(
       return NextResponse.json({ error: "Invalid signature" }, { status: 403 });
     }
 
-    let body: any;
+    let body: WhatsAppWebhookBody;
     try {
       body = JSON.parse(rawBody);
     } catch {
@@ -123,6 +137,9 @@ export async function POST(
     }
     
     const from = msg.from;
+    if (!from) {
+      return NextResponse.json({ success: true, message: "Message sender missing" });
+    }
     const text = msg.text?.body?.toLowerCase()?.trim() || "";
     
     // Normalize phone (last 10 digits)
