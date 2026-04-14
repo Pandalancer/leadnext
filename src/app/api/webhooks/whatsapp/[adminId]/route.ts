@@ -137,6 +137,9 @@ export async function POST(
     }
     
     const from = msg.from;
+    if (!from) {
+      return NextResponse.json({ success: true, message: "Message sender missing" });
+    }
     const text = msg.text?.body?.toLowerCase()?.trim() || "";
     
     // Normalize phone (last 10 digits)
