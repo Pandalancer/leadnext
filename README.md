@@ -1,166 +1,235 @@
 <div align="center">
 
-# 🟢 LeadCRM
+<br />
 
-**A WhatsApp-first, multi-tenant CRM built with Next.js**
+<img src="https://img.shields.io/badge/%E2%9C%A8-LeadNext-10b981?style=for-the-badge&labelColor=0a0f1a" alt="LeadNext" height="40" />
 
-Manage leads, schedule follow-ups, and integrate with WhatsApp & Facebook — all in one place.
+<br /><br />
 
-[![Next.js](https://img.shields.io/badge/Next.js-16.2-black?logo=next.js)](https://nextjs.org)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript)](https://www.typescriptlang.org)
-[![Prisma](https://img.shields.io/badge/Prisma-5.22-2D3748?logo=prisma)](https://www.prisma.io)
-[![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-v4-38bdf8?logo=tailwindcss)](https://tailwindcss.com)
-[![Vercel](https://img.shields.io/badge/Deploy-Vercel-000?logo=vercel)](https://vercel.com)
+# Turn WhatsApp Conversations Into Customers
+
+**LeadNext** is a WhatsApp-first, multi-tenant CRM that captures leads from WhatsApp, Facebook, and the web — then helps your team track, follow up, and close every single one.
+
+<br />
+
+[![Next.js 16](https://img.shields.io/badge/Next.js-16.2-000?style=flat-square&logo=next.js)](https://nextjs.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+[![Prisma](https://img.shields.io/badge/Prisma-5.22-2D3748?style=flat-square&logo=prisma)](https://www.prisma.io)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-38bdf8?style=flat-square&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
+[![Deploy on Vercel](https://img.shields.io/badge/Deploy-Vercel-000?style=flat-square&logo=vercel)](https://vercel.com)
+[![License](https://img.shields.io/badge/License-Proprietary-333?style=flat-square)](#license)
+
+<br />
+
+[Get Started](#-quick-start) · [Features](#-why-leadnext) · [Architecture](#%EF%B8%8F-architecture) · [API Reference](#-api-reference) · [Deploy](#-deploy-to-production)
+
+<br />
 
 </div>
 
 ---
 
-## ✨ Features
+## 💡 The Problem
 
-| Feature | Description |
-|---|---|
-| 🏢 **Multi-Tenant** | Isolated data per admin with a Super Admin view across all tenants |
-| 💬 **WhatsApp Integration** | Receive leads automatically via WhatsApp Business API webhooks |
-| 📣 **Facebook Lead Ads** | Capture leads from Facebook ad campaigns in real time |
-| 📋 **Lead Management** | Full CRUD for leads with status tracking: `NEW → INTERESTED → HOT → CONVERTED` |
-| ⏰ **Follow-up Scheduler** | Schedule, snooze, and complete follow-ups with reminders |
-| 📊 **Admin Dashboard** | Stats, recent activity feed, and upcoming follow-up summary |
-| 🔒 **Role-Based Access** | `SUPER_ADMIN` and `ADMIN` roles with enforced route protection |
-| 🔐 **Encryption** | AES-256-GCM for WhatsApp tokens, SMTP passwords, and other sensitive data |
-| 📝 **Activity Logs** | Full audit trail of every mutation per lead |
-| 📱 **Responsive UI** | Mobile-first design with a collapsible sidebar and glassmorphism style |
+Your sales team lives on WhatsApp. Leads come in as chat messages, get buried in threads, and silently die. There's no pipeline, no follow-up reminders, no audit trail.
+
+**LeadNext fixes that.**
+
+Every incoming WhatsApp message, Facebook lead ad, or web form submission automatically becomes a tracked lead in your pipeline — with smart status stages, scheduled follow-ups, and a full activity history.
 
 ---
 
-## 🛠 Tech Stack
+## 🚀 Why LeadNext?
 
-| Layer | Technology |
-|---|---|
-| **Framework** | [Next.js 16](https://nextjs.org) (App Router) |
-| **Language** | TypeScript 5 |
-| **Auth** | [NextAuth.js v5](https://authjs.dev) — Credentials Provider, JWT sessions |
-| **Database** | PostgreSQL (hosted on [Supabase](https://supabase.com)) |
-| **ORM** | [Prisma 5](https://www.prisma.io) |
-| **Styling** | [Tailwind CSS v4](https://tailwindcss.com) |
-| **State** | [Zustand v5](https://zustand-demo.pmnd.rs) + [TanStack Query v5](https://tanstack.com/query) |
-| **Icons** | [Lucide React](https://lucide.dev) |
-| **Encryption** | Node.js `crypto` — AES-256-GCM |
-| **Deployment** | [Vercel](https://vercel.com) (standalone output) |
+<table>
+<tr>
+<td width="50%">
+
+### 💬 WhatsApp-First Pipeline
+Incoming WhatsApp messages are automatically captured as leads. Message intent is parsed to set initial status — "hello" becomes `NEW`, "interested" becomes `INTERESTED`, "call me" becomes `HOT`.
+
+### 📣 Facebook Lead Ads
+Connect your Meta ad campaigns and watch leads flow directly into your dashboard. Zero manual entry.
+
+### 🔁 Smart Follow-Ups
+Schedule, snooze, remind, and complete follow-ups. Never let a hot lead go cold because someone forgot to call back.
+
+### 📊 Command-Center Dashboard
+At-a-glance stats — total leads, conversions, today's follow-ups — plus a 7-day activity chart and upcoming action items.
+
+</td>
+<td width="50%">
+
+### 🏢 Multi-Tenant by Design
+Each admin operates in a fully isolated data space. A Super Admin sees everything across all tenants from a single pane of glass.
+
+### 🔒 Enterprise-Grade Security
+Passwords hashed with bcrypt (cost ≥ 12). WhatsApp tokens and SMTP credentials encrypted with AES-256-GCM at rest. JWT sessions. Role-enforced route protection.
+
+### 📝 Full Audit Trail
+Every create, update, status change, and follow-up is logged in a per-lead activity timeline with before/after snapshots.
+
+### 📱 Mobile-Ready
+Responsive, glassmorphism-styled UI with a collapsible sidebar that works beautifully on phones, tablets, and desktops.
+
+</td>
+</tr>
+</table>
 
 ---
 
-## 🚀 Getting Started
+## ⚡ Quick Start
 
 ### Prerequisites
 
-- **Node.js** 18 or later
-- **PostgreSQL** database (local or [Supabase](https://supabase.com))
-- **npm** (or yarn / pnpm)
+| Requirement | Version |
+|---|---|
+| Node.js | 18+ |
+| PostgreSQL | Any (or [Supabase](https://supabase.com) hosted) |
+| npm | 8+ |
 
-### 1. Clone the repository
+### 1 — Clone & install
 
 ```bash
-git clone https://github.com/harryneopotter/leadnext.git
+git clone https://github.com/Pandalancer/leadnext.git
 cd leadnext
-```
-
-### 2. Install dependencies
-
-```bash
 npm install
 ```
 
-### 3. Configure environment variables
+### 2 — Configure environment
 
-Create a `.env.local` file in the project root:
+Create **`.env.local`** in the project root:
 
 ```env
-# PostgreSQL — use separate URLs for Supabase connection pooling
+# PostgreSQL (use separate URLs for Supabase connection pooling)
 DATABASE_URL="postgresql://user:password@host:5432/leadcrm?pgbouncer=true"
 DIRECT_URL="postgresql://user:password@host:5432/leadcrm"
 
-# NextAuth — generate a strong random secret
+# Auth — generate with: openssl rand -base64 32
 NEXTAUTH_SECRET="your-super-secret-key"
 NEXTAUTH_URL="http://localhost:3000"
 
-# AES-256-GCM encryption key (32-byte key encoded as 64 hex characters)
+# Encryption — generate with: openssl rand -hex 32 (must be exactly 64 hex chars)
 ENCRYPTION_KEY="0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
 ```
 
-> **Tip:** Generate a `NEXTAUTH_SECRET` with `openssl rand -base64 32` and an `ENCRYPTION_KEY` with `openssl rand -hex 32`.
-
-### 4. Set up the database
+### 3 — Set up the database
 
 ```bash
-# Apply migrations and generate the Prisma client
-npx prisma migrate dev
-
-# (Optional) Seed with a Super Admin, Admin, and sample leads
-npx prisma db seed
+npx prisma migrate dev     # Apply migrations & generate Prisma client
+npx prisma db seed          # Seed Super Admin, Admin, and sample leads
 ```
 
-### 5. Start the development server
+### 4 — Launch
 
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Open **[http://localhost:3000](http://localhost:3000)** and sign in.
 
----
-
-## 🔑 Default Credentials (Seed Data)
-
-> ⚠️ For local/dev only. Rotate or remove these immediately in shared or production environments.
+### 🔑 Default credentials (seed data)
 
 | Role | Email | Password |
 |---|---|---|
-| `SUPER_ADMIN` | `superadmin@leadcrm.com` | `SuperAdmin@2024!` |
-| `ADMIN` | `admin@leadcrm.com` | `Admin@2024!` |
+| **Super Admin** | `superadmin@leadcrm.com` | `SuperAdmin@2024!` |
+| **Admin** | `admin@leadcrm.com` | `Admin@2024!` |
+
+> ⚠️ **Change these immediately** in any shared or production environment.
 
 ---
 
-## 📁 Project Structure
+## 🏗️ Architecture
+
+```
+┌────────────────────────────────────────────────────┐
+│                     CLIENTS                        │
+│  WhatsApp Business API · Facebook Lead Ads · Web   │
+└──────────────┬────────────────┬────────────────────┘
+               │ Webhooks       │ REST API
+               ▼                ▼
+┌──────────────────────────────────────────┐
+│           Next.js 16 (App Router)        │
+│                                          │
+│  ┌──────────┐  ┌──────────┐  ┌────────┐ │
+│  │  Pages   │  │   API    │  │  Auth  │ │
+│  │ (React)  │  │ Routes   │  │NextAuth│ │
+│  └──────────┘  └──────────┘  └────────┘ │
+│                                          │
+│  Zustand + TanStack Query (client state) │
+│  Tailwind CSS v4 (styling)               │
+└──────────────┬───────────────────────────┘
+               │ Prisma ORM
+               ▼
+┌──────────────────────────────────────────┐
+│        PostgreSQL (Supabase)             │
+│                                          │
+│  User · Lead · FollowUp · ActivityLog   │
+│  AdminSettings · SystemSettings          │
+└──────────────────────────────────────────┘
+```
+
+### Tech Stack at a Glance
+
+| Layer | Technology |
+|---|---|
+| **Framework** | [Next.js 16](https://nextjs.org) — App Router, server & client components |
+| **Language** | TypeScript 5 — strict mode |
+| **Auth** | [NextAuth.js v5](https://authjs.dev) — Credentials provider, JWT sessions |
+| **Database** | PostgreSQL on [Supabase](https://supabase.com) |
+| **ORM** | [Prisma 5](https://www.prisma.io) |
+| **Styling** | [Tailwind CSS v4](https://tailwindcss.com) + glassmorphism design system |
+| **Client State** | [Zustand v5](https://zustand-demo.pmnd.rs) + [TanStack Query v5](https://tanstack.com/query) |
+| **Encryption** | AES-256-GCM via Node.js `crypto` |
+| **Icons** | [Lucide React](https://lucide.dev) |
+| **Deployment** | [Vercel](https://vercel.com) — standalone output, Mumbai (`bom1`) region |
+
+---
+
+## 🗂 Project Structure
 
 ```
 leadnext/
 ├── prisma/
-│   ├── schema.prisma          # Database models
-│   └── seed.ts                # Seed script
+│   ├── schema.prisma            # Data models & relations
+│   └── seed.ts                  # Dev seed script
 ├── src/
 │   ├── app/
-│   │   ├── api/               # REST API routes
-│   │   │   ├── auth/          # NextAuth endpoints
-│   │   │   ├── leads/         # Lead CRUD + ingest
-│   │   │   ├── followups/     # Follow-up CRUD
-│   │   │   ├── admin/         # Admin settings
-│   │   │   └── webhooks/      # WhatsApp & Facebook webhooks
-│   │   ├── dashboard/         # Admin dashboard
-│   │   ├── leads/             # Lead list, detail, create, edit
-│   │   ├── followups/         # Follow-up schedule
-│   │   ├── settings/          # WhatsApp & SMTP config
-│   │   ├── admins/            # Manage admin users (Super Admin)
-│   │   ├── all-leads/         # Cross-tenant lead view (Super Admin)
-│   │   ├── login/             # Login page
-│   │   └── page.tsx           # Public landing page
-│   ├── auth.ts                # NextAuth configuration
-│   ├── proxy.ts               # Page-route gating logic (wire via middleware entrypoint)
+│   │   ├── api/
+│   │   │   ├── auth/            # NextAuth endpoints
+│   │   │   ├── leads/           # Lead CRUD + external ingest
+│   │   │   ├── followups/       # Follow-up CRUD
+│   │   │   ├── admin/           # Per-admin settings
+│   │   │   └── webhooks/        # WhatsApp & Facebook webhooks
+│   │   ├── dashboard/           # Admin command-center dashboard
+│   │   ├── leads/               # Lead list · detail · create · edit
+│   │   ├── followups/           # Follow-up schedule view
+│   │   ├── settings/            # Account settings
+│   │   ├── questions/           # Configurable lead intake questions
+│   │   ├── admins/              # Manage admins (Super Admin)
+│   │   ├── all-leads/           # Cross-tenant lead view (Super Admin)
+│   │   ├── login/               # Authentication
+│   │   └── page.tsx             # Public landing page
+│   ├── auth.ts                  # NextAuth configuration
+│   ├── proxy.ts                 # Route-gating logic
 │   ├── components/
-│   │   ├── sidebar.tsx        # Navigation sidebar
-│   │   └── providers.tsx      # React Query + Session providers
+│   │   ├── sidebar.tsx          # Responsive nav sidebar
+│   │   └── providers.tsx        # React Query + Session providers
 │   └── lib/
-│       ├── crypto.ts          # AES-256-GCM helpers
-│       ├── phone.ts           # Phone number normalisation
-│       └── prisma.ts          # Prisma client singleton
+│       ├── crypto.ts            # AES-256-GCM encrypt/decrypt
+│       ├── phone.ts             # Phone number normalisation
+│       ├── url.ts               # URL helpers
+│       ├── utils.ts             # Shared utilities
+│       └── prisma.ts            # Prisma singleton
+├── scripts/                     # Migration & verification helpers
 ├── next.config.ts
-├── package.json
-└── tsconfig.json
+├── vercel.json
+└── package.json
 ```
 
 ---
 
-## 🗄 Database Schema
+## 🗄 Data Model
 
 ```
 User ──< Lead ──< FollowUp
@@ -168,15 +237,15 @@ User ──< Lead ──< FollowUp
 User ──  AdminSettings
 ```
 
-| Model | Key Fields |
-|---|---|
-| **User** | `id`, `email`, `password` (bcrypt), `role` (`SUPER_ADMIN` \| `ADMIN`), `status` |
-| **Lead** | `id`, `adminId`, `name`, `phone`, `email`, `city`, `source`, `status`, `whatsappOptIn` |
-| **FollowUp** | `id`, `leadId`, `scheduledAt`, `status` (`PENDING/REMINDED/COMPLETED/SNOOZED/CANCELLED`) |
-| **ActivityLog** | `id`, `userId`, `leadId`, `action`, `details` (JSON) |
-| **AdminSettings** | WhatsApp credentials & SMTP config (AES-256 encrypted) |
+| Model | Purpose | Key Fields |
+|---|---|---|
+| **User** | Admin & Super Admin accounts | `email`, `password` (bcrypt), `role`, `status` |
+| **Lead** | Every prospect in the pipeline | `name`, `phone`, `email`, `city`, `source`, `status`, `whatsappOptIn` |
+| **FollowUp** | Scheduled touchpoints per lead | `scheduledAt`, `status`, `notes`, `snoozedUntil`, `completedAt` |
+| **ActivityLog** | Immutable audit trail | `action`, `details` (JSON with before/after) |
+| **AdminSettings** | Per-admin WhatsApp & SMTP config | Encrypted tokens, timezone, lead questions |
 
-**Lead statuses:** `NEW` · `INTERESTED` · `NOT_INTERESTED` · `NOT_PICKED` · `HOT` · `CONVERTED` · `FOLLOW_UP`
+**Lead lifecycle:** `NEW` → `INTERESTED` → `HOT` → `CONVERTED` *(also: `NOT_INTERESTED` · `NOT_PICKED` · `FOLLOW_UP`)*
 
 **Lead sources:** `MANUAL` · `WHATSAPP` · `FACEBOOK` · `WEBSITE` · `REFERRAL` · `OTHER`
 
@@ -184,104 +253,107 @@ User ──  AdminSettings
 
 ## 🔌 API Reference
 
-### Leads
+### Lead Management
 
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
-| `POST` | `/api/leads` | Admin | Create a new lead |
+| `POST` | `/api/leads` | Admin | Create a lead |
 | `PUT` | `/api/leads/:id` | Admin | Update a lead |
 | `DELETE` | `/api/leads/:id` | Admin | Delete a lead |
-| `POST` | `/api/leads/ingest/:adminId` | Header auth (`x-leadcrm-ingest-secret`) | External lead ingestion using the per-admin secret configured in Admin Settings |
-| `GET` | `/api/leads/ingest/:adminId` | Public | Returns usage/auth header guidance for the ingest endpoint |
 
-### Follow-ups
+### External Ingestion
 
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
-| `POST` | `/api/followups` | Admin | Create a follow-up |
+| `POST` | `/api/leads/ingest/:adminId` | `x-leadcrm-ingest-secret` header | Push leads from any external system |
+| `GET` | `/api/leads/ingest/:adminId` | Public | Endpoint usage & auth guidance |
+
+### Follow-Ups
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| `POST` | `/api/followups` | Admin | Schedule a follow-up |
 
 ### Webhooks
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `GET/POST` | `/api/webhooks/whatsapp/:adminId` | WhatsApp Business API webhook |
-| `GET/POST` | `/api/webhooks/facebook/:adminId` | Facebook Lead Ads webhook |
+| `GET / POST` | `/api/webhooks/whatsapp/:adminId` | WhatsApp Business API webhook |
+| `GET / POST` | `/api/webhooks/facebook/:adminId` | Facebook Lead Ads webhook |
 
 ### Settings
 
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
-| `POST` | `/api/admin/settings` | Admin | Create/update encrypted WhatsApp & SMTP configuration |
+| `POST` | `/api/admin/settings` | Admin | Save encrypted WhatsApp & SMTP config |
 
 ---
 
-## 🔐 Authentication & Authorisation
+## 🔐 Security
 
-- **Strategy:** JWT-based sessions via NextAuth.js v5 (Credentials provider)
-- **Password hashing:** bcryptjs with cost factor ≥ 12
-- **Sensitive config:** AES-256-GCM encryption at rest for WhatsApp tokens and SMTP passwords
-- **Route protection:** API handlers enforce auth/role checks directly.
-- **Page-route gating:** Centralized gating logic is implemented in `src/proxy.ts`; wire it through a Next.js middleware entrypoint (`middleware.ts` or `src/middleware.ts`) to enable automatic page-level redirects.
+| Layer | Implementation |
+|---|---|
+| **Authentication** | NextAuth.js v5 — Credentials provider, JWT sessions, secure HTTP-only cookies |
+| **Password Storage** | bcryptjs, cost factor ≥ 12 |
+| **Secrets at Rest** | AES-256-GCM encryption for WhatsApp tokens, webhook secrets, SMTP passwords |
+| **Route Protection** | Role-based checks in every API handler; page-level gating via `proxy.ts` middleware |
+| **Webhook Verification** | `x-hub-signature-256` validation on incoming WhatsApp & Facebook payloads |
+| **Data Isolation** | Tenant-scoped queries — admins can only access their own leads |
 
-**Role permissions:**
+### Role Permissions
 
-| Route | ADMIN | SUPER_ADMIN |
-|---|---|---|
-| `/dashboard`, `/leads`, `/followups`, `/settings` | ✅ | — |
-| `/admins`, `/all-leads` | — | ✅ |
+| Pages | Admin | Super Admin |
+|---|:---:|:---:|
+| Dashboard · Leads · Follow-ups · Settings · Questions | ✅ | — |
+| Manage Admins · All Leads (cross-tenant) | — | ✅ |
 
 ---
 
-## 🌐 Webhooks Setup
+## 🌐 Integrations
 
-Each admin gets unique webhook URLs scoped to their `adminId`:
+### WhatsApp Business API
+
+Each admin gets a unique webhook URL:
 
 ```
-WhatsApp:  https://your-domain.com/api/webhooks/whatsapp/<adminId>
-Facebook:  https://your-domain.com/api/webhooks/facebook/<adminId>
-Ingest:    https://your-domain.com/api/leads/ingest/<adminId>
+https://your-domain.com/api/webhooks/whatsapp/<adminId>
 ```
 
-Configure these URLs in your WhatsApp Business API and Facebook App dashboards, then save the verification tokens in **Settings → Integrations** inside LeadCRM.
+1. Create a Meta Developer App → add WhatsApp product
+2. Copy the Access Token, Phone Number ID, and your chosen Verify Token
+3. Paste them into **Settings → Integrations** inside LeadNext
+4. Point Meta's Webhook Callback URL to the URL above
 
----
+Incoming messages are automatically parsed — "hello" creates a `NEW` lead, "interested" sets `INTERESTED`, "call me" sets `HOT`.
 
-## 🚢 Deployment
+### Facebook Lead Ads
 
-### Vercel (recommended)
+```
+https://your-domain.com/api/webhooks/facebook/<adminId>
+```
 
-1. Push your code to GitHub and import the repository in [Vercel](https://vercel.com/new).
-2. Add the required environment variables in the Vercel dashboard.
-3. Deploy — Vercel picks up the `standalone` Next.js output automatically.
+Subscribe to `leadgen_id` in Facebook Business Manager and LeadNext captures form submissions as leads in real time.
 
-> The `vercel.json` in this repo targets the `bom1` (Mumbai) region for low-latency access from India.
+### Generic Ingest API
 
-
-### Verify production schema after deploy
-
-To confirm newly-added Prisma fields are present in the existing Vercel database:
+Push leads from **any** external system:
 
 ```bash
-# 1) Pull production env vars (example; requires Vercel CLI in your environment)
-vercel env pull .env.vercel
-
-# 2) Load env vars and run checks
-set -a; source .env.vercel; set +a
-npm run verify:prod-schema
+curl -X POST https://your-domain.com/api/leads/ingest/<adminId> \
+  -H "Content-Type: application/json" \
+  -H "x-leadcrm-ingest-secret: <your-secret>" \
+  -d '{"name":"Jane Doe","phone":"9876543210","source":"WEBSITE"}'
 ```
 
-This script checks `prisma migrate status` and verifies these required columns exist in the target DB:
-- `AdminSettings.initialLeadQuestions`
-- `Lead.initialQuestionResponses`
+---
 
-> On Vercel auto-deploy, this verification now runs automatically as part of the build command in `vercel.json`:
-> `ALLOW_PRISMA_BASELINE=1 npm run migrate:deploy:safe && npm run verify:prod-schema && prisma generate && next build`.
-> If required columns are missing, the deployment fails early.
->
-> A dedicated migration (`prisma/migrations/202604140001_add_missing_initial_question_fields`) now adds these columns on existing databases before verification runs.
-> The `migrate:deploy:safe` step handles Prisma `P3005` (non-empty schema) only when `ALLOW_PRISMA_BASELINE=1` is set, then resolves the `0_init` baseline and retries deploy.
+## 🚢 Deploy to Production
 
-### Environment variables (production)
+### Vercel (Recommended)
+
+1. Push your repo to GitHub
+2. Import it in [Vercel](https://vercel.com/new)
+3. Add environment variables in the Vercel dashboard:
 
 ```env
 DATABASE_URL=...
@@ -291,43 +363,62 @@ NEXTAUTH_URL=https://your-production-domain.com
 ENCRYPTION_KEY=...
 ```
 
----
+4. Deploy — Vercel automatically uses the `standalone` Next.js output
 
-## 🧰 Available Scripts
+> The included `vercel.json` targets the **Mumbai (`bom1`)** region for low-latency access from India.
 
-```bash
-npm run dev      # Start development server (http://localhost:3000)
-npm run build    # prisma generate + next build
-npm run start    # Start production server
-npm run lint     # Run ESLint
+### Production Schema Verification
+
+The build command automatically verifies that all required database columns exist before deployment:
+
+```
+ALLOW_PRISMA_BASELINE=1 npm run migrate:deploy:safe &&
+npm run verify:prod-schema &&
+prisma generate &&
+next build
 ```
 
-```bash
-npm run migrate:deploy:safe  # Run migrations (P3005 baseline disabled by default)
-ALLOW_PRISMA_BASELINE=1 npm run migrate:deploy:safe  # Enable automatic baseline handling for P3005
-npm run verify:prod-schema  # Verify required Prisma columns exist in prod DB
-```
-
-```bash
-npx prisma migrate dev   # Apply schema changes locally
-npx prisma db seed       # Seed the database
-npx prisma studio        # Open Prisma's visual DB browser
-npx prisma migrate reset # Reset the database (dev only)
-```
+If required columns are missing, the deployment **fails early** — no silent data issues.
 
 ---
 
-## 📄 Additional Documentation
+## 🧰 Scripts
 
-| File | Contents |
+| Command | What It Does |
 |---|---|
-| [`ARCHITECTURE.md`](./ARCHITECTURE.md) | Full architecture, component map, data-flow diagrams |
-| [`DATABASE_SCHEMA.md`](./DATABASE_SCHEMA.md) | Detailed schema with access-control notes |
-| [`WALKTHROUGH.md`](./WALKTHROUGH.md) | End-to-end feature walkthrough |
-| [`IMPLEMENTATION-NEXT.md`](./IMPLEMENTATION-NEXT.md) | Upcoming features and dev roadmap |
+| `npm run dev` | Start dev server on `localhost:3000` |
+| `npm run build` | `prisma generate` + `next build` |
+| `npm run start` | Start production server |
+| `npm run lint` | ESLint check |
+| `npm run migrate:deploy:safe` | Apply migrations with optional P3005 baseline handling |
+| `npm run verify:prod-schema` | Verify required columns exist in production DB |
+| `npx prisma studio` | Visual database browser |
+| `npx prisma db seed` | Seed dev data |
+| `npx prisma migrate reset` | Reset database (dev only) |
 
 ---
 
-## 📜 License
+## 📚 Documentation
 
-This project is private and proprietary. All rights reserved.
+| Document | Description |
+|---|---|
+| **[ARCHITECTURE.md](./ARCHITECTURE.md)** | Full architecture deep-dive, component map, data-flow diagrams, color system |
+| **[DATABASE_SCHEMA.md](./DATABASE_SCHEMA.md)** | Complete schema reference with role-based access control matrix |
+| **[WALKTHROUGH.md](./WALKTHROUGH.md)** | End-to-end feature walkthrough — WhatsApp setup, Facebook setup, SMTP config |
+| **[IMPLEMENTATION-NEXT.md](./IMPLEMENTATION-NEXT.md)** | Upcoming features and development roadmap |
+
+---
+
+<div align="center">
+
+<br />
+
+**Built with ❤️ for sales teams that close deals on WhatsApp.**
+
+<br />
+
+© 2025 LeadNext. All rights reserved.
+
+<br /><br />
+
+</div>
