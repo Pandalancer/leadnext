@@ -29,38 +29,40 @@ function parseInitialQuestionResponses(
     const allowedOptions = new Set(item.options ?? []);
 
     if (item.type === "CHECKBOX") {
-       if (Array.isArray(answerValue)) {
-         answer = answerValue
-           .map((v) => (typeof v === "string" ? v.trim() : String(v).trim()))
-           .filter((v) => v && (allowedOptions.size === 0 || allowedOptions.has(v)));
-          if (answer.length === 0) answer = undefined;
-       }
+      if (Array.isArray(answerValue)) {
+        answer = answerValue
+          .map((v) => (typeof v === "string" ? v.trim() : String(v)))
+          .filter((v) => v && allowedOptions.has(v));
+        if (answer.length === 0) answer = undefined;
+      }
     } else if (item.type === "MULTIPLE_CHOICE" || item.type === "DROPDOWN") {
-       if (typeof answerValue === "string" || typeof answerValue === "number" || typeof answerValue === "boolean") {
-         const trimmed = String(answerValue).trim();
-         if (trimmed && allowedOptions.has(trimmed)) {
-           answer = trimmed;
-         }
-       }
-    } else if (item.type === "RANGE") {
-       if (
-         typeof answerValue === "number" ||
-         (typeof answerValue === "string" && answerValue.trim() !== "")
-       ) {
-          const num = Number(answerValue);
-          if (!isNaN(num)) {
-              answer = String(num); // Ensure it's a string representation of the number
-             if (item.min !== undefined && num < item.min) answer = String(item.min);
-             if (item.max !== undefined && num > item.max) answer = String(item.max);
-         }
-       }
-    } else {
-        if (typeof answerValue === "string") {
-            const trimmed = answerValue.trim();
-            if (trimmed) answer = trimmed;
-        } else if (typeof answerValue === "number" || typeof answerValue === "boolean") {
-            answer = String(answerValue);
+      if (typeof answerValue === "string" || typeof answerValue === "number" || typeof answerValue === "boolean") {
+        const trimmed = String(answerValue).trim();
+        if (trimmed && allowedOptions.has(trimmed)) {
+          answer = trimmed;
         }
+      }
+    } else if (item.type === "RANGE") {
+      if (
+        typeof answerValue === "number" ||
+        (typeof answerValue === "string" && answerValue.trim() !== "")
+      ) {
+        const num = Number(answerValue);
+        if (!isNaN(num)) {
+          const min = typeof item.min === "number" ? item.min : num;
+          const max = typeof item.max === "number" ? item.max : num;
+          const lowerBound = Math.min(min, max);
+          const upperBound = Math.max(min, max);
+          answer = String(Math.min(upperBound, Math.max(lowerBound, num)));
+        }
+      }
+    } else {
+      if (typeof answerValue === "string") {
+        const trimmed = answerValue.trim();
+        if (trimmed) answer = trimmed;
+      } else if (typeof answerValue === "number" || typeof answerValue === "boolean") {
+        answer = String(answerValue);
+      }
     }
 
     if (answer === undefined) continue;
