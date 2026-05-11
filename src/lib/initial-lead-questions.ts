@@ -33,8 +33,8 @@ export function parseInitialLeadQuestions(value: unknown): InitialLeadQuestion[]
         let options: string[] = [];
         if ("options" in item && Array.isArray(item.options)) {
           options = item.options
-            .filter((opt: any) => typeof opt === "string" && opt.trim() !== "")
-            .map((opt: any) => opt.trim());
+            .filter((opt): opt is string => typeof opt === "string" && opt.trim() !== "")
+            .map((opt) => opt.trim());
         }
         parsedQuestion.options = options;
       } else if (type === 'RANGE') {

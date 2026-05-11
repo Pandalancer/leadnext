@@ -26,17 +26,30 @@ function parseInitialQuestionResponses(
     const answerValue = item.id in responses ? (responses as Record<string, unknown>)[item.id] : undefined;
 
     let answer: string | string[] | undefined;
+    const allowedOptions = new Set(item.options ?? []);
 
     if (item.type === "CHECKBOX") {
        if (Array.isArray(answerValue)) {
-         answer = answerValue.map(v => typeof v === "string" ? v.trim() : String(v)).filter(Boolean);
-         if (answer.length === 0) answer = undefined;
+         answer = answerValue
+           .map((v) => (typeof v === "string" ? v.trim() : String(v).trim()))
+           .filter((v) => v && (allowedOptions.size === 0 || allowedOptions.has(v)));
+          if (answer.length === 0) answer = undefined;
+       }
+    } else if (item.type === "MULTIPLE_CHOICE" || item.type === "DROPDOWN") {
+       if (typeof answerValue === "string" || typeof answerValue === "number" || typeof answerValue === "boolean") {
+         const trimmed = String(answerValue).trim();
+         if (trimmed && allowedOptions.has(trimmed)) {
+           answer = trimmed;
+         }
        }
     } else if (item.type === "RANGE") {
-       if (typeof answerValue === "number" || typeof answerValue === "string") {
-         const num = Number(answerValue);
-         if (!isNaN(num)) {
-             answer = String(num); // Ensure it's a string representation of the number
+       if (
+         typeof answerValue === "number" ||
+         (typeof answerValue === "string" && answerValue.trim() !== "")
+       ) {
+          const num = Number(answerValue);
+          if (!isNaN(num)) {
+              answer = String(num); // Ensure it's a string representation of the number
              if (item.min !== undefined && num < item.min) answer = String(item.min);
              if (item.max !== undefined && num > item.max) answer = String(item.max);
          }
