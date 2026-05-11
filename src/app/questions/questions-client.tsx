@@ -1,6 +1,7 @@
 "use client";
 
 import type { UserRole } from "@prisma/client";
+import { getInitials } from "@/lib/utils";
 import { useState } from "react";
 import Link from "next/link";
 import { Sidebar } from "@/components/sidebar";
@@ -160,7 +161,7 @@ export default function QuestionsClient({ user, questions: initialQuestions }: Q
               fontWeight: "700",
               border: "2px solid #10b981",
             }}>
-              {user.name ? user.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2) : "U"}
+              {getInitials(user.name) || "U"}
             </div>
           </div>
         </header>

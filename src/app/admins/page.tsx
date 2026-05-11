@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { getInitials } from "@/lib/utils";
 import { Sidebar } from "@/components/sidebar";
 import { ArrowLeft, Plus } from "lucide-react";
 
@@ -98,7 +99,7 @@ export default async function AdminsPage() {
                       display: "flex", alignItems: "center", justifyContent: "center",
                       fontSize: "0.875rem", fontWeight: "700", color: "#10b981",
                     }}>
-                      {admin.name?.split(" ").map((n: string) => n[0]).join("").slice(0, 2) || "AD"}
+                      {getInitials(admin.name) || "AD"}
                     </div>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: "0.9375rem", fontWeight: "600", color: "var(--text-primary)" }}>

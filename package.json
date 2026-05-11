@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",
+    "migrate:deploy:safe": "./scripts/migrate-deploy-safe.sh",
+    "verify:prod-schema": "./scripts/verify-prisma-prod-schema.sh",
     "start": "next start",
     "lint": "eslint"
   },

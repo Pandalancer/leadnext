@@ -2,6 +2,7 @@
 
 import type { UserRole } from "@prisma/client";
 import { useState } from "react";
+import { getInitials } from "@/lib/utils";
 import Link from "next/link";
 import { Sidebar } from "@/components/sidebar";
 import { ArrowLeft, MessageCircle, Save, Loader2, Copy, Check } from "lucide-react";
@@ -141,7 +142,7 @@ export function AdminPageClient({ user, settings, baseUrl }: AdminPageProps) {
               fontWeight: "700",
               border: "2px solid #10b981",
             }}>
-              {user.name ? user.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2) : "U"}
+              {getInitials(user.name) || "U"}
             </div>
           </div>
         </header>

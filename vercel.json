@@ -1,7 +1,1 @@
-{
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "prisma generate && next build",
-  "outputDirectory": ".next",
-  "framework": "nextjs",
-  "regions": ["bom1"]
-}
+{"buildCommand":"ALLOW_PRISMA_BASELINE=1 npm run migrate:deploy:safe && npm run verify:prod-schema && prisma generate && next build"}

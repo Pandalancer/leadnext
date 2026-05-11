@@ -23,23 +23,19 @@ function LoginForm() {
     setError("");
 
     try {
-      console.log("Attempting login...", email);
       const result = await signIn("credentials", {
         email,
         password,
         redirect: false,
         callbackUrl,
       });
-      console.log("Login result:", result);
 
       if (result?.error) {
         console.error("Login error:", result.error);
         setError("Invalid email or password. Please try again.");
       } else if (result?.ok) {
-        console.log("Login successful, redirecting to:", callbackUrl);
         window.location.href = callbackUrl;
       } else {
-        console.log("Unexpected result:", result);
         setError("Login failed. Please try again.");
       }
     } catch {
