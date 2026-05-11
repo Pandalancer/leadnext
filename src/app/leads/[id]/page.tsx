@@ -193,7 +193,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
             {/* Initial Question Responses Card */}
             {(() => {
               if (!Array.isArray(lead.initialQuestionResponses)) return null;
-              const responses = lead.initialQuestionResponses as { id: string; question: string; answer: string }[];
+              const responses = lead.initialQuestionResponses as { id: string; question: string; answer: string | string[] }[];
               if (responses.length === 0) return null;
               return (
                 <div className="card" style={{ padding: "1.5rem" }}>
@@ -207,7 +207,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
                           {i + 1}. {item.question}
                         </div>
                         <div style={{ fontSize: "0.9375rem", color: "var(--text-primary)", paddingLeft: "1rem" }}>
-                          {item.answer}
+                          {Array.isArray(item.answer) ? item.answer.join(", ") : item.answer}
                         </div>
                       </div>
                     ))}

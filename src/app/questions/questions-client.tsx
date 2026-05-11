@@ -50,7 +50,7 @@ export default function QuestionsClient({ user, questions: initialQuestions }: Q
 
   const addQuestion = () => {
     if (questions.length >= MAX_INITIAL_LEAD_QUESTIONS) return;
-    setQuestions([...questions, { id: crypto.randomUUID(), question: "" }]);
+    setQuestions([...questions, { id: crypto.randomUUID(), question: "", type: "TEXT" }]);
     setSaveSuccess(false);
   };
 
@@ -60,8 +60,8 @@ export default function QuestionsClient({ user, questions: initialQuestions }: Q
     setSaveError("");
   };
 
-  const updateQuestion = (id: string, value: string) => {
-    setQuestions(questions.map((q) => (q.id === id ? { ...q, question: value } : q)));
+  const updateQuestion = (id: string, updates: Partial<InitialLeadQuestion>) => {
+    setQuestions(questions.map((q) => (q.id === id ? { ...q, ...updates } : q)));
     setSaveSuccess(false);
     setSaveError("");
   };
@@ -329,23 +329,87 @@ export default function QuestionsClient({ user, questions: initialQuestions }: Q
                     }}>
                       {index + 1}
                     </span>
-                    <input
-                      type="text"
-                      aria-label={`Question ${index + 1}`}
-                      value={q.question}
-                      onChange={(e) => updateQuestion(q.id, e.target.value)}
-                      placeholder={PLACEHOLDER_EXAMPLES[index] ?? `Question ${index + 1}`}
-                      style={{
-                        width: "100%",
-                        background: "#f8fafc",
-                        border: "1px solid #e2e8f0",
-                        borderRadius: "0.625rem",
-                        padding: "0.75rem 1rem",
-                        fontSize: "0.875rem",
-                        color: "#171c1f",
-                        outline: "none",
-                      }}
-                    />
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', width: '100%' }}>
+                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <input
+                          type="text"
+                          aria-label={`Question ${index + 1}`}
+                          value={q.question}
+                          onChange={(e) => updateQuestion(q.id, { question: e.target.value })}
+                          placeholder={PLACEHOLDER_EXAMPLES[index] ?? `Question ${index + 1}`}
+                          style={{
+                            flex: 1,
+                            background: "#f8fafc",
+                            border: "1px solid #e2e8f0",
+                            borderRadius: "0.625rem",
+                            padding: "0.75rem 1rem",
+                            fontSize: "0.875rem",
+                            color: "#171c1f",
+                            outline: "none",
+                          }}
+                        />
+                        <select
+                          value={q.type || 'TEXT'}
+                          onChange={(e) => updateQuestion(q.id, { type: e.target.value as InitialLeadQuestion['type'] })}
+                          style={{
+                            background: "#f8fafc",
+                            border: "1px solid #e2e8f0",
+                            borderRadius: "0.625rem",
+                            padding: "0.75rem",
+                            fontSize: "0.875rem",
+                            color: "#171c1f",
+                            outline: "none",
+                            width: "160px"
+                          }}
+                        >
+                          <option value="TEXT">Text</option>
+                          <option value="MULTIPLE_CHOICE">Multiple Choice</option>
+                          <option value="DROPDOWN">Dropdown</option>
+                          <option value="CHECKBOX">Checkbox</option>
+                          <option value="RANGE">Range</option>
+                        </select>
+                      </div>
+
+                      {/* Options for MULTIPLE_CHOICE, DROPDOWN, CHECKBOX */}
+                      {['MULTIPLE_CHOICE', 'DROPDOWN', 'CHECKBOX'].includes(q.type) && (
+                        <input
+                           type="text"
+                           placeholder="Options (comma separated)"
+                           value={q.options?.join(', ') || ''}
+                           onChange={(e) => updateQuestion(q.id, { options: e.target.value.split(',').map(o => o.trim()).filter(Boolean) })}
+                           style={{
+                             width: "100%",
+                             background: "#f8fafc",
+                             border: "1px solid #e2e8f0",
+                             borderRadius: "0.625rem",
+                             padding: "0.5rem 1rem",
+                             fontSize: "0.875rem",
+                             color: "#171c1f",
+                             outline: "none",
+                           }}
+                        />
+                      )}
+
+                      {/* Range min/max for RANGE */}
+                      {q.type === 'RANGE' && (
+                         <div style={{ display: 'flex', gap: '0.5rem' }}>
+                            <input
+                               type="number"
+                               placeholder="Min"
+                               value={q.min ?? ''}
+                               onChange={(e) => updateQuestion(q.id, { min: e.target.value ? parseInt(e.target.value, 10) : undefined })}
+                               style={{ flex: 1, padding: "0.5rem", borderRadius: "0.625rem", border: "1px solid #e2e8f0" }}
+                            />
+                            <input
+                               type="number"
+                               placeholder="Max"
+                               value={q.max ?? ''}
+                               onChange={(e) => updateQuestion(q.id, { max: e.target.value ? parseInt(e.target.value, 10) : undefined })}
+                               style={{ flex: 1, padding: "0.5rem", borderRadius: "0.625rem", border: "1px solid #e2e8f0" }}
+                            />
+                         </div>
+                      )}
+                    </div>
                     <button
                       type="button"
                       onClick={() => removeQuestion(q.id)}
