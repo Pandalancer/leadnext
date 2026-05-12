@@ -34,7 +34,7 @@ export function parseInitialLeadQuestions(value: unknown): InitialLeadQuestion[]
         if ("options" in item && Array.isArray(item.options)) {
           options = item.options
             .filter((opt: unknown): opt is string => typeof opt === "string" && opt.trim() !== "")
-            .map((opt) => opt.trim());
+            .map((opt: string) => opt.trim());
         }
         parsedQuestion.options = options;
       } else if (type === 'RANGE') {
