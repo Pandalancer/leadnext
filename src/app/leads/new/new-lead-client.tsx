@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Sidebar } from "@/components/sidebar";
 import { ArrowLeft, Save, Loader2, UserPlus, Mail, Phone, MapPin, Tag } from "lucide-react";
+import { type InitialLeadQuestion } from "@/lib/initial-lead-questions";
 
 
 export default function NewLeadPage({
@@ -13,7 +14,7 @@ export default function NewLeadPage({
   initialLeadQuestions,
 }: {
   user: { id: string; email: string; name?: string | null; role: UserRole };
-  initialLeadQuestions: { id: string; question: string }[];
+  initialLeadQuestions: InitialLeadQuestion[];
 }) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
@@ -26,7 +27,7 @@ export default function NewLeadPage({
     source: "MANUAL",
     remarks: "",
   });
-  const [initialQuestionResponses, setInitialQuestionResponses] = useState<Record<string, string>>(
+  const [initialQuestionResponses, setInitialQuestionResponses] = useState<Record<string, string | number | string[]>>(
     () =>
       Object.fromEntries(
         initialLeadQuestions.map((q) => [q.id, ""])
@@ -268,31 +269,132 @@ export default function NewLeadPage({
                   Initial Lead Questions
                 </h4>
                 <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-                  {initialLeadQuestions.map((q, index) => (
+                  {initialLeadQuestions.map((q, index) => {
+                    const type = q.type || "TEXT";
+                    const value = initialQuestionResponses[q.id];
+
+                    return (
                     <div key={q.id} style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
                       <label style={{ fontSize: "0.875rem", fontWeight: "600", color: "#374151" }}>
                         {index + 1}. {q.question}
                       </label>
-                      <input
-                        type="text"
-                        value={initialQuestionResponses[q.id] ?? ""}
-                        onChange={(e) =>
-                          setInitialQuestionResponses((prev) => ({
-                            ...prev,
-                            [q.id]: e.target.value,
-                          }))
-                        }
-                        placeholder="Enter response"
-                        style={{
-                          padding: "0.75rem 1rem",
-                          borderRadius: "0.75rem",
-                          border: "1px solid #e5e7eb",
-                          fontSize: "0.875rem",
-                          background: "#f9fafb",
-                        }}
-                      />
+
+                      {type === "TEXT" && (
+                          <input
+                            type="text"
+                            value={(value as string) ?? ""}
+                            onChange={(e) =>
+                              setInitialQuestionResponses((prev) => ({
+                                ...prev,
+                                [q.id]: e.target.value,
+                              }))
+                            }
+                            placeholder="Enter response"
+                            style={{
+                              padding: "0.75rem 1rem",
+                              borderRadius: "0.75rem",
+                              border: "1px solid #e5e7eb",
+                              fontSize: "0.875rem",
+                              background: "#f9fafb",
+                            }}
+                          />
+                      )}
+
+                      {type === "MULTIPLE_CHOICE" && (
+                         <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                           {q.options?.map((opt) => (
+                             <label key={opt} style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.875rem" }}>
+                               <input
+                                 type="radio"
+                                 name={q.id}
+                                 value={opt}
+                                 checked={value === opt}
+                                 onChange={(e) =>
+                                    setInitialQuestionResponses((prev) => ({
+                                      ...prev,
+                                      [q.id]: e.target.value,
+                                    }))
+                                 }
+                               />
+                               {opt}
+                             </label>
+                           ))}
+                         </div>
+                      )}
+
+                      {type === "DROPDOWN" && (
+                          <select
+                            value={(value as string) ?? ""}
+                            onChange={(e) =>
+                              setInitialQuestionResponses((prev) => ({
+                                ...prev,
+                                [q.id]: e.target.value,
+                              }))
+                            }
+                            style={{
+                              padding: "0.75rem 1rem",
+                              borderRadius: "0.75rem",
+                              border: "1px solid #e5e7eb",
+                              fontSize: "0.875rem",
+                              background: "#f9fafb",
+                            }}
+                          >
+                             <option value="" disabled>Select an option</option>
+                             {q.options?.map((opt) => (
+                                <option key={opt} value={opt}>{opt}</option>
+                             ))}
+                          </select>
+                      )}
+
+                      {type === "CHECKBOX" && (
+                          <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                            {q.options?.map((opt) => {
+                               const currentValues = (Array.isArray(value) ? value : []) as string[];
+                               return (
+                                 <label key={opt} style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.875rem" }}>
+                                   <input
+                                     type="checkbox"
+                                     value={opt}
+                                     checked={currentValues.includes(opt)}
+                                     onChange={(e) => {
+                                        const newValues = e.target.checked
+                                            ? [...currentValues, opt]
+                                            : currentValues.filter(v => v !== opt);
+                                        setInitialQuestionResponses((prev) => ({
+                                          ...prev,
+                                          [q.id]: newValues,
+                                        }));
+                                     }}
+                                   />
+                                   {opt}
+                                 </label>
+                               );
+                            })}
+                          </div>
+                      )}
+
+                      {type === "RANGE" && (
+                          <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                             <input
+                               type="range"
+                               min={q.min ?? 0}
+                               max={q.max ?? 100}
+                               value={(value as number) ?? (q.min ?? 0)}
+                               onChange={(e) =>
+                                  setInitialQuestionResponses((prev) => ({
+                                    ...prev,
+                                    [q.id]: parseInt(e.target.value, 10),
+                                  }))
+                               }
+                               style={{ width: "100%" }}
+                             />
+                             <div style={{ fontSize: "0.875rem", color: "#6b7280", textAlign: "right" }}>
+                                {value ?? (q.min ?? 0)}
+                             </div>
+                          </div>
+                      )}
                     </div>
-                  ))}
+                  )})}
                 </div>
               </div>
             )}

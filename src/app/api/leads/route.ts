@@ -11,7 +11,7 @@ import {
 type InitialQuestionAnswer = {
   id: string;
   question: string;
-  answer: string;
+  answer: string | string[]; // Can be an array for CHECKBOX
 };
 
 function parseInitialQuestionResponses(
@@ -23,9 +23,50 @@ function parseInitialQuestionResponses(
   if (!hasValidInitialLeadQuestionCount(parsedQuestions)) return [];
   const parsedResponses: InitialQuestionAnswer[] = [];
   for (const item of parsedQuestions) {
-    const answerValue = item.id in responses ? (responses as Record<string, unknown>)[item.id] : "";
-    const answer = typeof answerValue === "string" ? answerValue.trim() : "";
-    if (!answer) continue;
+    const answerValue = item.id in responses ? (responses as Record<string, unknown>)[item.id] : undefined;
+
+    let answer: string | string[] | undefined;
+    const allowedOptions = new Set(item.options ?? []);
+
+    if (item.type === "CHECKBOX") {
+      if (Array.isArray(answerValue)) {
+        answer = answerValue
+          .map((v) => (typeof v === "string" ? v.trim() : String(v)))
+          .filter((v) => v && allowedOptions.has(v));
+        if (answer.length === 0) answer = undefined;
+      }
+    } else if (item.type === "MULTIPLE_CHOICE" || item.type === "DROPDOWN") {
+      if (typeof answerValue === "string" || typeof answerValue === "number" || typeof answerValue === "boolean") {
+        const trimmed = String(answerValue).trim();
+        if (trimmed && allowedOptions.has(trimmed)) {
+          answer = trimmed;
+        }
+      }
+    } else if (item.type === "RANGE") {
+      if (
+        typeof answerValue === "number" ||
+        (typeof answerValue === "string" && answerValue.trim() !== "")
+      ) {
+        const num = Number(answerValue);
+        if (!isNaN(num)) {
+          const min = typeof item.min === "number" ? item.min : num;
+          const max = typeof item.max === "number" ? item.max : num;
+          const lowerBound = Math.min(min, max);
+          const upperBound = Math.max(min, max);
+          answer = String(Math.min(upperBound, Math.max(lowerBound, num)));
+        }
+      }
+    } else {
+      if (typeof answerValue === "string") {
+        const trimmed = answerValue.trim();
+        if (trimmed) answer = trimmed;
+      } else if (typeof answerValue === "number" || typeof answerValue === "boolean") {
+        answer = String(answerValue);
+      }
+    }
+
+    if (answer === undefined) continue;
+
     parsedResponses.push({
       id: item.id,
       question: item.question,
